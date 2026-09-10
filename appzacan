@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Sistema Integrado - Casa Bauducco</title>
+  <title>Sistema Integrado - Bulguer Guaco</title>
 
   <link rel="icon" type="image/png" href="./logo.png">
 
@@ -12,17 +12,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
   <style>
     :root {
-      --cb-bordo: #4A0E17;
-      --cb-bordo-dark: #36070E;
-      --cb-gold: #D4AF37;
-      --cb-cream: #FAF7F2;
+      --bg-primary: #1C1917;
+      --bg-dark: #0C0A09;
+      --bg-gold: #D4AF37;
+      --bg-cream: #FAF7F2;
     }
-    .bg-cb-bordo { background-color: var(--cb-bordo); }
-    .bg-cb-bordo-dark { background-color: var(--cb-bordo-dark); }
-    .text-cb-bordo { color: var(--cb-bordo); }
-    .text-cb-gold { color: var(--cb-gold); }
-    .border-cb-gold { border-color: var(--cb-gold); }
-    .bg-cb-cream { background-color: var(--cb-cream); }
+    .bg-cb-bordo { background-color: var(--bg-primary); }
+    .bg-cb-bordo-dark { background-color: var(--bg-dark); }
+    .text-cb-bordo { color: var(--bg-primary); }
+    .text-cb-gold { color: var(--bg-gold); }
+    .border-cb-gold { border-color: var(--bg-gold); }
+    .bg-cb-cream { background-color: var(--bg-cream); }
     #sidebar { transition: transform 0.3s ease-in-out; }
     .event-card { cursor: grab; }
     .event-card:active { cursor: grabbing; }
@@ -57,7 +57,7 @@
   <div id="login-screen" class="fixed inset-0 bg-cb-bordo-dark z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl border border-cb-gold/30">
       <div class="flex flex-col items-center justify-center">
-        <img id="login-logo-img" src="./logo.png" alt="Casa Bauducco" class="h-24 w-auto object-contain">
+        <img id="login-logo-img" src="./logo.png" alt="Bulguer Guaco" class="h-24 w-auto object-contain">
         <p class="text-xs text-stone-500 font-medium mt-1">Acesso à Supervisão Operacional</p>
       </div>
 
@@ -84,7 +84,7 @@
   <div id="modules-screen" class="fixed inset-0 bg-cb-bordo-dark z-40 hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white w-full max-w-sm rounded-2xl p-6 space-y-5 shadow-2xl border border-cb-gold/30 text-center">
       <div>
-        <img id="modules-logo-img" src="./logo.png" alt="Casa Bauducco" class="h-14 w-auto object-contain mx-auto mb-1">
+        <img id="modules-logo-img" src="./logo.png" alt="Bulguer Guaco" class="h-14 w-auto object-contain mx-auto mb-1">
         <h2 class="text-xs font-bold text-cb-bordo uppercase tracking-wider">Painel Principal</h2>
         <p class="text-[11px] text-stone-500">Selecione o módulo que deseja acessar</p>
       </div>
@@ -142,10 +142,10 @@
           ☰
         </button>
         <div class="bg-white p-1 rounded-lg shadow-sm flex items-center justify-center">
-          <img id="header-logo-img" src="./logo.png" alt="Casa Bauducco" class="h-8 w-auto object-contain">
+          <img id="header-logo-img" src="./logo.png" alt="Bulguer Guaco" class="h-8 w-auto object-contain">
         </div>
         <div>
-          <h1 class="text-xs font-bold tracking-wider uppercase text-cb-gold" id="header-app-title">Casa Bauducco</h1>
+          <h1 class="text-xs font-bold tracking-wider uppercase text-cb-gold" id="header-app-title">Bulguer Guaco</h1>
           <p class="text-[10px] text-stone-200" id="current-user-badge">Operador</p>
         </div>
       </div>
@@ -367,7 +367,6 @@
           </div>
         </div>
 
-        <!-- Barra de Ações em Massa (Batch) -->
         <div id="batch-actions-bar" class="p-2.5 bg-stone-100 rounded-xl border border-stone-200 flex justify-between items-center flex-wrap gap-2 text-xs">
           <div class="flex items-center gap-2">
             <input type="checkbox" id="select-all-actions" onchange="toggleSelectAllActions(this.checked)" class="rounded text-cb-bordo focus:ring-0">
@@ -424,11 +423,6 @@
         </div>
       </div>
 
-      <div class="bg-amber-50 border border-amber-300 p-3 rounded-xl text-xs text-amber-900 flex justify-between items-center shadow-sm">
-        <span>🛡️ <strong>Emergências:</strong> Acionar seguro — <strong>Luiz Parahyba:</strong> (12) 99121-5466</span>
-        <a href="https://api.whatsapp.com/send?phone=5512991215466" target="_blank" class="px-2.5 py-1 bg-emerald-600 text-white font-bold rounded hover:bg-emerald-700 whitespace-nowrap">💬 WhatsApp</a>
-      </div>
-
       <div id="technicians-list-container" class="space-y-3"></div>
     </main>
 
@@ -437,7 +431,7 @@
       <div class="bg-gradient-to-r from-cb-bordo to-rose-900 p-4 rounded-xl shadow-lg border border-cb-gold/30 space-y-2">
         <h3 class="text-white font-bold text-xs flex items-center gap-2">🤖 Agendamento Inteligente (IA)</h3>
         <div class="flex gap-2">
-          <input type="text" id="ia-input" placeholder="Ex: Treinamento na Aricanduva dia 25/08 às 10h" class="flex-1 text-xs border rounded-lg p-2.5 bg-white/90">
+          <input type="text" id="ia-input" placeholder="Ex: Treinamento de Equipe dia 25/08 às 10h" class="flex-1 text-xs border rounded-lg p-2.5 bg-white/90">
           <button onclick="processarAgendaIA()" class="px-4 py-2 bg-cb-gold text-cb-bordo font-bold text-xs rounded-lg hover:bg-yellow-500 transition shadow-md">Processar</button>
         </div>
       </div>
@@ -482,7 +476,6 @@
   </div>
 
   <!-- MODAIS DO SISTEMA -->
-  <!-- Modal da Lixeira de Planos de Ação -->
   <div id="trash-actions-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg h-[80vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden border border-cb-gold/30 text-xs">
       <div class="p-4 border-b border-stone-200 flex justify-between items-center bg-cb-bordo text-white">
@@ -493,18 +486,16 @@
     </div>
   </div>
 
-  <!-- Modal da Lixeira de Relatórios / Checklists -->
   <div id="reports-trash-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg h-[80vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden border border-cb-gold/30 text-xs">
       <div class="p-4 border-b border-stone-200 flex justify-between items-center bg-cb-bordo text-white">
-        <h3 class="font-bold text-sm uppercase text-cb-gold">🗑️ Lixeira de Relatórios de Checklists</h3>
+        <h3 class="font-bold text-sm uppercase text-cb-gold">🗑️ Lixeira de Relatórios</h3>
         <button onclick="toggleReportsTrashModal()" class="font-bold text-stone-300 hover:text-white text-base">✕</button>
       </div>
       <div id="reports-trash-list" class="p-4 overflow-y-auto space-y-2.5 flex-1 bg-stone-50"></div>
     </div>
   </div>
 
-  <!-- Modal de Conclusão de Manutenção com Garantia -->
   <div id="maintenance-resolution-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white w-full max-w-lg rounded-2xl p-5 space-y-4 shadow-2xl border border-cb-gold/30 text-xs my-8">
       <div class="flex justify-between items-center border-b pb-2 bg-cb-bordo text-white -mx-5 -mt-5 p-4 rounded-t-2xl">
@@ -528,7 +519,7 @@
         </div>
         <div>
           <label class="block font-bold text-stone-600 mb-1">Qual Equipamento / Item?</label>
-          <input type="text" id="res-equipamento" placeholder="Ex: Geladeira Expositora" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+          <input type="text" id="res-equipamento" placeholder="Ex: Chapa de Lanches" class="w-full border rounded p-2 bg-stone-50 font-semibold">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -563,18 +554,16 @@
     </div>
   </div>
 
-  <!-- Modal de Controle de Garantias -->
   <div id="warranty-control-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-4xl h-[85vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden border border-cb-gold/30 text-xs">
       <div class="p-4 border-b border-stone-200 flex justify-between items-center bg-cb-bordo text-white">
-        <h3 class="font-bold text-sm uppercase text-cb-gold">🛡️ Planilha de Controle de Garantias</h3>
+        <h3 class="font-bold text-sm uppercase text-cb-gold">🛡️ Controle de Garantias</h3>
         <button onclick="toggleWarrantyModal()" class="font-bold text-stone-300 hover:text-white text-base">✕</button>
       </div>
       <div id="warranty-list-container" class="p-4 overflow-y-auto space-y-3 flex-1 bg-stone-50"></div>
     </div>
   </div>
 
-  <!-- Modal de Novo Plano de Ação Manual -->
   <div id="new-action-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl border border-cb-gold/30 text-xs">
       <div class="flex justify-between items-center border-b pb-2">
@@ -588,7 +577,7 @@
         </div>
         <div>
           <label class="block font-bold text-stone-600 mb-1">Título / Ocorrência:</label>
-          <input type="text" id="manual-action-title" placeholder="Ex: Organização do Estoque" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+          <input type="text" id="manual-action-title" placeholder="Ex: Ajuste de Temperatura da Cozinha" class="w-full border rounded p-2 bg-stone-50 font-semibold">
         </div>
         <div>
           <label class="block font-bold text-stone-600 mb-1">Ação a ser Realizada:</label>
@@ -617,7 +606,6 @@
     </div>
   </div>
 
-  <!-- Modal de Técnicos / Manutenção -->
   <div id="tech-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl border border-cb-gold/30 text-xs">
       <div class="flex justify-between items-center border-b pb-2">
@@ -632,13 +620,13 @@
         </div>
         <div>
           <label class="block font-bold text-stone-600 mb-1">Serviço / Especialidade:</label>
-          <input type="text" id="tech-service" placeholder="Ex: Ar Condicionado, Máquina de Gelo" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+          <input type="text" id="tech-service" placeholder="Ex: Chapa Eletrônica, Coifa" class="w-full border rounded p-2 bg-stone-50 font-semibold">
         </div>
         <div>
           <label class="block font-bold text-stone-600 mb-1">Região:</label>
           <select id="tech-region" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+            <option value="Guaço">Guaço</option>
             <option value="São José dos Campos">São José dos Campos</option>
-            <option value="Mogi">Mogi</option>
             <option value="São Paulo">São Paulo</option>
             <option value="Geral">Geral (Todas Regiões)</option>
           </select>
@@ -655,7 +643,6 @@
     </div>
   </div>
 
-  <!-- Modal de Eventos da Agenda -->
   <div id="event-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl border border-cb-gold/30 text-xs">
       <div class="flex justify-between items-center border-b pb-2">
@@ -666,7 +653,7 @@
       <div class="space-y-3">
         <div>
           <label class="block font-bold text-stone-600 mb-1">Título do Evento:</label>
-          <input type="text" id="event-title" placeholder="Ex: Treinamento CRM, Promoção..." class="w-full border rounded p-2 bg-stone-50 font-semibold">
+          <input type="text" id="event-title" placeholder="Ex: Treinamento de Processos, Promoção..." class="w-full border rounded p-2 bg-stone-50 font-semibold">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -718,7 +705,6 @@
     </div>
   </div>
 
-  <!-- Modal de Chat e Detalhes da Ação -->
   <div id="chat-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-2 sm:p-4">
     <div class="bg-white w-full max-w-lg h-[90vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden border border-cb-gold/30">
       <div class="p-3.5 border-b border-stone-200 flex justify-between items-center bg-cb-bordo text-white">
@@ -745,7 +731,6 @@
     </div>
   </div>
 
-  <!-- Modal de Gerenciamento de Usuários e Unidades -->
   <div id="users-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-xl h-[90vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden border border-cb-gold/30">
       <div class="p-4 border-b border-stone-200 flex justify-between items-center bg-cb-cream">
@@ -767,7 +752,7 @@
         <div class="bg-white p-3 rounded-xl border space-y-2 shadow-sm">
           <span class="block font-bold text-cb-bordo uppercase">Cadastrar Nova Loja / Unidade</span>
           <div class="flex gap-2">
-            <input type="text" id="admin-new-unit-input" placeholder="Ex: Shopping..." class="flex-1 border rounded p-2 bg-stone-50 font-semibold">
+            <input type="text" id="admin-new-unit-input" placeholder="Ex: Loja Central..." class="flex-1 border rounded p-2 bg-stone-50 font-semibold">
             <button onclick="adminAddNewUnit()" class="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded">Adicionar</button>
           </div>
         </div>
@@ -851,7 +836,6 @@
     </div>
   </div>
 
-  <!-- Modal de Configuração Geral dos Checklists -->
   <div id="config-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-2 sm:p-4">
     <div class="bg-white w-full max-w-2xl h-[92vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden border border-cb-gold/30">
 
@@ -869,7 +853,7 @@
         <div class="bg-white p-4 rounded-xl border border-stone-200 space-y-3 shadow-sm">
           <span class="block text-xs font-bold text-cb-bordo uppercase tracking-wider">Novo Modelo</span>
           <div class="space-y-2">
-            <input type="text" id="new-checklist-name" placeholder="Ex: Fechamento" class="w-full text-xs border rounded-lg p-2.5 bg-stone-50">
+            <input type="text" id="new-checklist-name" placeholder="Ex: Fechamento de Loja" class="w-full text-xs border rounded-lg p-2.5 bg-stone-50">
             <div id="new-checklist-roles-box" class="space-y-1">
               <label class="block font-bold text-stone-600 text-xs">Vincular Perfis com Acesso a este Checklist:</label>
               <div class="flex gap-4 text-xs font-semibold">
@@ -933,7 +917,6 @@
     </div>
   </div>
 
-  <!-- Modal de Edição de Pergunta -->
   <div id="edit-question-modal" class="fixed inset-0 bg-black/60 z-[60] hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl border text-xs">
       <div class="flex justify-between items-center border-b pb-2">
@@ -985,14 +968,14 @@
   </footer>
 
   <script>
+    // CONFIGURAÇÃO DO FIREBASE DA NOVA EMPRESA (BULGUER GUACO)
     const firebaseConfig = {
-      apiKey: "AIzaSyAII60fmHrt6myJd7PdviKPeCk5PKL4VYo",
-      authDomain: "checklistcb.firebaseapp.com",
-      projectId: "checklistcb",
-      storageBucket: "checklistcb.firebasestorage.app",
-      messagingSenderId: "984641991406",
-      appId: "1:984641991406:web:b161bab70afdfaa084b9ff",
-      measurementId: "G-RLC8M1D788"
+      apiKey: "AIzaSyAp1gpVU-eUIjtfswGu0KNsVyMQ9vITJtQ",
+      authDomain: "sistema-op-bulguer-guaco.firebaseapp.com",
+      projectId: "sistema-op-bulguer-guaco",
+      storageBucket: "sistema-op-bulguer-guaco.firebasestorage.app",
+      messagingSenderId: "465781333324",
+      appId: "1:465781333324:web:6d75d8bac623898e4c03e9"
     };
 
     let db = null;
@@ -1006,7 +989,6 @@
       console.warn("Erro Firebase:", err);
     }
 
-    // Utilitário para compactação de fotos via Canvas antes do salvamento
     function compressImageFile(file, maxWidth = 1024, quality = 0.7) {
       return new Promise((resolve, reject) => {
         if (!file.type.startsWith('image/')) {
@@ -1045,126 +1027,92 @@
     }
 
     const DEFAULT_EMBEDDED_LOGO = "./logo.png";
-    let users = JSON.parse(localStorage.getItem("CB_LOCAL_USERS")) || [
+    let users = JSON.parse(localStorage.getItem("BG_LOCAL_USERS")) || [
       { username: "alcides", pass: "12345678", name: "Alcides Ramos", role: "admin", units: [] }
     ];
-    let presetUnits = JSON.parse(localStorage.getItem("CB_LOCAL_UNITS")) || [
-      "CB Shopping CenterVale", "CB Shopping Oriente", "CB Shopping Aricanduva"
+    let presetUnits = JSON.parse(localStorage.getItem("BG_LOCAL_UNITS")) || [
+      "Bulguer Guaco - Unidade 1", "Bulguer Guaco - Unidade 2"
     ];
-    let actionStatuses = JSON.parse(localStorage.getItem("CB_LOCAL_STATUSES")) || [
+    let actionStatuses = JSON.parse(localStorage.getItem("BG_LOCAL_STATUSES")) || [
       { name: "Pendente", color: "bg-rose-100 border-rose-300" },
       { name: "Em Andamento", color: "bg-amber-100 border-amber-300" },
       { name: "Concluído", color: "bg-emerald-100 border-emerald-300" }
     ];
-    let actionPriorities = JSON.parse(localStorage.getItem("CB_LOCAL_PRIORITIES")) || [
+    let actionPriorities = JSON.parse(localStorage.getItem("BG_LOCAL_PRIORITIES")) || [
       { name: "Urgente", style: "bg-rose-600 text-white font-black" },
       { name: "Importante", style: "bg-amber-500 text-white font-bold" },
       { name: "Não Urgente", style: "bg-stone-200 text-stone-800 font-semibold" }
     ];
-    let actionCustomStatus = JSON.parse(localStorage.getItem("CB_LOCAL_CUSTOM_STATUS")) || {};
-    let actionCustomPriority = JSON.parse(localStorage.getItem("CB_LOCAL_CUSTOM_PRIORITY")) || {};
-    let currentUser = JSON.parse(sessionStorage.getItem("CB_LOCAL_LOGGED_USER")) || null;
-    let manualActionsList = JSON.parse(localStorage.getItem("CB_LOCAL_MANUAL_ACTIONS")) || [];
-    let trashActionsList = JSON.parse(localStorage.getItem("CB_LOCAL_TRASH_ACTIONS")) || [];
-    let reportsTrashList = JSON.parse(localStorage.getItem("CB_LOCAL_REPORTS_TRASH")) || [];
-    let warrantyRecords = JSON.parse(localStorage.getItem("CB_LOCAL_WARRANTY_RECORDS")) || [];
-    let readNotifications = JSON.parse(localStorage.getItem("CB_READ_NOTIFICATIONS")) || {};
-    let unreadChatMessages = JSON.parse(localStorage.getItem("CB_UNREAD_CHAT_MSGS")) || {};
-    let techniciansList = JSON.parse(localStorage.getItem("CB_LOCAL_TECHNICIANS")) || [
-      { name: "Luiz Parahyba (Seguro)", service: "Sinistros e Emergências", region: "Geral", phone: "(12) 99121-5466" }
+    let actionCustomStatus = JSON.parse(localStorage.getItem("BG_LOCAL_CUSTOM_STATUS")) || {};
+    let actionCustomPriority = JSON.parse(localStorage.getItem("BG_LOCAL_CUSTOM_PRIORITY")) || {};
+    let currentUser = JSON.parse(sessionStorage.getItem("BG_LOCAL_LOGGED_USER")) || null;
+    let manualActionsList = JSON.parse(localStorage.getItem("BG_LOCAL_MANUAL_ACTIONS")) || [];
+    let trashActionsList = JSON.parse(localStorage.getItem("BG_LOCAL_TRASH_ACTIONS")) || [];
+    let reportsTrashList = JSON.parse(localStorage.getItem("BG_LOCAL_REPORTS_TRASH")) || [];
+    let warrantyRecords = JSON.parse(localStorage.getItem("BG_LOCAL_WARRANTY_RECORDS")) || [];
+    let readNotifications = JSON.parse(localStorage.getItem("BG_READ_NOTIFICATIONS")) || {};
+    let unreadChatMessages = JSON.parse(localStorage.getItem("BG_UNREAD_CHAT_MSGS")) || {};
+    let techniciansList = JSON.parse(localStorage.getItem("BG_LOCAL_TECHNICIANS")) || [
+      { name: "Suporte Técnico Geral", service: "Atendimento Emergencial", region: "Geral", phone: "(00) 00000-0000" }
     ];
 
-    let calendarEvents = JSON.parse(localStorage.getItem("CB_LOCAL_CALENDAR_EVENTS")) || [];
+    let calendarEvents = JSON.parse(localStorage.getItem("BG_LOCAL_CALENDAR_EVENTS")) || [];
     let currentCalendarDate = new Date();
     let currentCalendarView = 'month';
     let activeChatActionId = null;
     let lastDeletedItem = null;
 
-    let savedReports = JSON.parse(localStorage.getItem("CB_LOCAL_REPORTS")) || [];
+    let savedReports = JSON.parse(localStorage.getItem("BG_LOCAL_REPORTS")) || [];
 
-    // Higienização inicial
     savedReports = savedReports.filter(r => r && r.id && !reportsTrashList.some(t => t.id === r.id));
-    try { localStorage.setItem("CB_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
+    try { localStorage.setItem("BG_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
 
     let selectedActionIds = new Set();
     let isAuditFinished = false;
 
     const defaultTemplates = [
       {
-        id: "cb-supervisao",
-        name: "Casa Bauducco - Rota de Supervisão",
+        id: "bg-supervisao",
+        name: "Bulguer Guaco - Rota de Supervisão",
         roles: ["admin", "gerente", "operador"],
         categories: [
           {
-            category: "1. Estrutura, Salão & Visual",
+            category: "1. Fachada & Visual",
             items: [
-              { title: "Fachada da loja, luzes, letreiros, Leds", type: "boolean", requirePhoto: true },
-              { title: "Ambiente interno", type: "boolean", requirePhoto: true },
-              { title: "A comunicação visual está dentro do padrão?", type: "boolean", requirePhoto: true },
-              { title: "Mesas de atendimento", type: "boolean", requirePhoto: false },
-              { title: "Avaliar som ambiente", type: "boolean", requirePhoto: false },
-              { title: "Temperatura da Loja", type: "boolean", requirePhoto: false },
-              { title: "Todas áreas da loja estão sendo utilizadas para sua devida finalidade?", type: "boolean", requirePhoto: false },
-              { title: "Condição de móveis, utensílios e equipamentos", type: "boolean", requirePhoto: true }
+              { title: "Fachada da loja, iluminação e sinalização", type: "boolean", requirePhoto: true },
+              { title: "Limpeza da área externa e salão", type: "boolean", requirePhoto: true },
+              { title: "Conservação das mesas e assentos", type: "boolean", requirePhoto: false }
             ]
           },
           {
-            category: "2. Atendimento, Caixa & Equipe",
+            category: "2. Atendimento & Equipe",
             items: [
-              { title: "Avaliar apresentação dos colaboradores", type: "boolean", requirePhoto: true },
-              { title: "Escala de horários e Plano de posicionamento do dia está preenchido?", type: "boolean", requirePhoto: true },
-              { title: "Checar cumprimento da jornada do cliente durante o atendimento", type: "boolean", requirePhoto: false },
-              { title: "Verificar realização de venda sugestiva", type: "boolean", requirePhoto: false },
-              { title: "Conhecimentos gerais sobre marca e produtos?", type: "boolean", requirePhoto: false },
-              { title: "Formou fila maior que 3 clientes?", type: "boolean", requirePhoto: false },
-              { title: "Verificar organização da área do caixa", type: "boolean", requirePhoto: true },
-              { title: "PDV 1 e PDV 2 abertos?", type: "boolean", requirePhoto: true },
-              { title: "Tabela nutricional e Código de defesa do consumidor", type: "boolean", requirePhoto: false },
-              { title: "Cardápios disponíveis e em bom estado de conservação?", type: "boolean", requirePhoto: false }
+              { title: "Uniformes completos e higienizados", type: "boolean", requirePhoto: true },
+              { title: "Escala de trabalho preenchida e afixada", type: "boolean", requirePhoto: true },
+              { title: "Postura e atendimento ao cliente", type: "boolean", requirePhoto: false }
             ]
           },
           {
-            category: "3. Produtos, Exposição & Café",
+            category: "3. Cozinha & Produção",
             items: [
-              { title: "Vitrine refrigerada com exposição adequada?", type: "boolean", requirePhoto: true },
-              { title: "Máquina de café e moinho regulados?", type: "boolean", requirePhoto: true },
-              { title: "Fatias dentro do padrão de peso e visual?", type: "boolean", requirePhoto: true },
-              { title: "Exposição do empório", type: "boolean", requirePhoto: true },
-              { title: "Insumos repostos de acordo com o movimento?", type: "boolean", requirePhoto: true }
+              { title: "Organização da chapa e área de montagem", type: "boolean", requirePhoto: true },
+              { title: "Validades de insumos e molhos", type: "boolean", requirePhoto: true },
+              { title: "Padrão de montagem dos hambúrgueres", type: "boolean", requirePhoto: true }
             ]
           },
           {
-            category: "4. Equipamentos, Limpeza & Segurança Alimentar",
+            category: "4. Equipamentos & Manutenção",
             items: [
-              { title: "Equipamentos operacionais em boas condições de uso e limpos?", type: "boolean", requirePhoto: true },
-              { title: "Inspecionar segurança de alimentos e boas práticas", type: "boolean", requirePhoto: true },
-              { title: "Tabela de validades impressa e disponível", type: "boolean", requirePhoto: true },
-              { title: "PAPs impressos e disponíveis", type: "boolean", requirePhoto: true },
-              { title: "Organização dos estoques", type: "boolean", requirePhoto: true }
-            ]
-          },
-          {
-            category: "5. Gestão, Controles & Administrativo",
-            items: [
-              { title: "Cadernos de controles estão sendo preenchidos?", type: "boolean", requirePhoto: false },
-              { title: "Loja está batendo a meta da semana?", type: "boolean", requirePhoto: false },
-              { title: "CAFs de reembolso foram abertos?", type: "boolean", requirePhoto: false },
-              { title: "Notas fiscais estão lançadas no GCOM?", type: "boolean", requirePhoto: false }
-            ]
-          },
-          {
-            category: "6. Ordens de Manutenção & Equipamentos",
-            items: [
-              { title: "Necessidade de Manutenção em Equipamentos do Salão ou Balcão?", type: "maintenance", requirePhoto: true },
-              { title: "Necessidade de Manutenção Predial / Hidráulica / Elétrica?", type: "maintenance", requirePhoto: false }
+              { title: "Funcionamento de geladeiras e freezers", type: "maintenance", requirePhoto: true },
+              { title: "Condições gerais de exaustores e chapas", type: "maintenance", requirePhoto: false }
             ]
           }
         ]
       }
     ];
 
-    let allChecklists = JSON.parse(localStorage.getItem("CB_LOCAL_CHECKLISTS")) || defaultTemplates;
-    let activeChecklistId = localStorage.getItem("CB_LOCAL_ACTIVE_ID") || allChecklists[0].id;
+    let allChecklists = JSON.parse(localStorage.getItem("BG_LOCAL_CHECKLISTS")) || defaultTemplates;
+    let activeChecklistId = localStorage.getItem("BG_LOCAL_ACTIVE_ID") || allChecklists[0].id;
 
     function updateSyncUI(status, text) {
       const ind = document.getElementById("sync-indicator");
@@ -1184,19 +1132,19 @@
       db.collection("app_config").doc("main").onSnapshot(doc => {
         if (doc.exists) {
           const data = doc.data();
-          if (data.checklists) { allChecklists = data.checklists; localStorage.setItem("CB_LOCAL_CHECKLISTS", JSON.stringify(allChecklists)); }
-          if (data.units) { presetUnits = data.units; localStorage.setItem("CB_LOCAL_UNITS", JSON.stringify(presetUnits)); }
-          if (data.users) { users = data.users; localStorage.setItem("CB_LOCAL_USERS", JSON.stringify(users)); }
-          if (data.statuses) { actionStatuses = data.statuses; localStorage.setItem("CB_LOCAL_STATUSES", JSON.stringify(actionStatuses)); }
-          if (data.priorities) { actionPriorities = data.priorities; localStorage.setItem("CB_LOCAL_PRIORITIES", JSON.stringify(actionPriorities)); }
-          if (data.technicians) { techniciansList = data.technicians; localStorage.setItem("CB_LOCAL_TECHNICIANS", JSON.stringify(techniciansList)); }
-          if (data.calendarEvents) { calendarEvents = data.calendarEvents; localStorage.setItem("CB_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents)); }
-          if (data.customStatus) { actionCustomStatus = data.customStatus; localStorage.setItem("CB_LOCAL_CUSTOM_STATUS", JSON.stringify(actionCustomStatus)); }
-          if (data.customPriority) { actionCustomPriority = data.customPriority; localStorage.setItem("CB_LOCAL_CUSTOM_PRIORITY", JSON.stringify(actionCustomPriority)); }
-          if (data.manualActions) { manualActionsList = data.manualActions; localStorage.setItem("CB_LOCAL_MANUAL_ACTIONS", JSON.stringify(manualActionsList)); }
-          if (data.trashActions) { trashActionsList = data.trashActions; localStorage.setItem("CB_LOCAL_TRASH_ACTIONS", JSON.stringify(trashActionsList)); }
-          if (data.reportsTrash) { reportsTrashList = data.reportsTrash; localStorage.setItem("CB_LOCAL_REPORTS_TRASH", JSON.stringify(reportsTrashList)); }
-          if (data.warrantyRecords) { warrantyRecords = data.warrantyRecords; localStorage.setItem("CB_LOCAL_WARRANTY_RECORDS", JSON.stringify(warrantyRecords)); }
+          if (data.checklists) { allChecklists = data.checklists; localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists)); }
+          if (data.units) { presetUnits = data.units; localStorage.setItem("BG_LOCAL_UNITS", JSON.stringify(presetUnits)); }
+          if (data.users) { users = data.users; localStorage.setItem("BG_LOCAL_USERS", JSON.stringify(users)); }
+          if (data.statuses) { actionStatuses = data.statuses; localStorage.setItem("BG_LOCAL_STATUSES", JSON.stringify(actionStatuses)); }
+          if (data.priorities) { actionPriorities = data.priorities; localStorage.setItem("BG_LOCAL_PRIORITIES", JSON.stringify(actionPriorities)); }
+          if (data.technicians) { techniciansList = data.technicians; localStorage.setItem("BG_LOCAL_TECHNICIANS", JSON.stringify(techniciansList)); }
+          if (data.calendarEvents) { calendarEvents = data.calendarEvents; localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents)); }
+          if (data.customStatus) { actionCustomStatus = data.customStatus; localStorage.setItem("BG_LOCAL_CUSTOM_STATUS", JSON.stringify(actionCustomStatus)); }
+          if (data.customPriority) { actionCustomPriority = data.customPriority; localStorage.setItem("BG_LOCAL_CUSTOM_PRIORITY", JSON.stringify(actionCustomPriority)); }
+          if (data.manualActions) { manualActionsList = data.manualActions; localStorage.setItem("BG_LOCAL_MANUAL_ACTIONS", JSON.stringify(manualActionsList)); }
+          if (data.trashActions) { trashActionsList = data.trashActions; localStorage.setItem("BG_LOCAL_TRASH_ACTIONS", JSON.stringify(trashActionsList)); }
+          if (data.reportsTrash) { reportsTrashList = data.reportsTrash; localStorage.setItem("BG_LOCAL_REPORTS_TRASH", JSON.stringify(reportsTrashList)); }
+          if (data.warrantyRecords) { warrantyRecords = data.warrantyRecords; localStorage.setItem("BG_LOCAL_WARRANTY_RECORDS", JSON.stringify(warrantyRecords)); }
 
           renderPresetUnits();
           renderHomeChecklistSelect();
@@ -1216,7 +1164,7 @@
           }
         });
         savedReports = tempReports;
-        try { localStorage.setItem("CB_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
+        try { localStorage.setItem("BG_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
         updateHistoryBadge();
         renderHistoryList();
         renderCentralizedActions();
@@ -1245,23 +1193,23 @@
       }).catch(err => console.error(err));
     }
 
-    let attachedPhotos = JSON.parse(localStorage.getItem("CB_DRAFT_PHOTOS")) || {};
-    let actionPlans = JSON.parse(localStorage.getItem("CB_DRAFT_PLANS")) || {};
-    let customAnswers = JSON.parse(localStorage.getItem("CB_DRAFT_ANSWERS")) || {};
-    let maintenanceOrders = JSON.parse(localStorage.getItem("CB_DRAFT_MAINT")) || {};
-    let draftStartTime = localStorage.getItem("CB_DRAFT_START_TIME") || null;
+    let attachedPhotos = JSON.parse(localStorage.getItem("BG_DRAFT_PHOTOS")) || {};
+    let actionPlans = JSON.parse(localStorage.getItem("BG_DRAFT_PLANS")) || {};
+    let customAnswers = JSON.parse(localStorage.getItem("BG_DRAFT_ANSWERS")) || {};
+    let maintenanceOrders = JSON.parse(localStorage.getItem("BG_DRAFT_MAINT")) || {};
+    let draftStartTime = localStorage.getItem("BG_DRAFT_START_TIME") || null;
 
     let currentActionsTab = 'pending';
 
     function saveDraft() {
       try {
-        localStorage.setItem("CB_DRAFT_PHOTOS", JSON.stringify(attachedPhotos));
-        localStorage.setItem("CB_DRAFT_PLANS", JSON.stringify(actionPlans));
-        localStorage.setItem("CB_DRAFT_ANSWERS", JSON.stringify(customAnswers));
-        localStorage.setItem("CB_DRAFT_MAINT", JSON.stringify(maintenanceOrders));
+        localStorage.setItem("BG_DRAFT_PHOTOS", JSON.stringify(attachedPhotos));
+        localStorage.setItem("BG_DRAFT_PLANS", JSON.stringify(actionPlans));
+        localStorage.setItem("BG_DRAFT_ANSWERS", JSON.stringify(customAnswers));
+        localStorage.setItem("BG_DRAFT_MAINT", JSON.stringify(maintenanceOrders));
         if (!draftStartTime) {
           draftStartTime = new Date().toLocaleString('pt-BR');
-          localStorage.setItem("CB_DRAFT_START_TIME", draftStartTime);
+          localStorage.setItem("BG_DRAFT_START_TIME", draftStartTime);
         }
       } catch(e) {
         console.warn("Armazenamento local cheio ao salvar rascunho:", e);
@@ -1272,11 +1220,11 @@
     function clearDraft() {
       attachedPhotos = {}; actionPlans = {}; customAnswers = {}; maintenanceOrders = {}; draftStartTime = null;
       isAuditFinished = false;
-      localStorage.removeItem("CB_DRAFT_PHOTOS");
-      localStorage.removeItem("CB_DRAFT_PLANS");
-      localStorage.removeItem("CB_DRAFT_ANSWERS");
-      localStorage.removeItem("CB_DRAFT_MAINT");
-      localStorage.removeItem("CB_DRAFT_START_TIME");
+      localStorage.removeItem("BG_DRAFT_PHOTOS");
+      localStorage.removeItem("BG_DRAFT_PLANS");
+      localStorage.removeItem("BG_DRAFT_ANSWERS");
+      localStorage.removeItem("BG_DRAFT_MAINT");
+      localStorage.removeItem("BG_DRAFT_START_TIME");
       updateDraftsBadge();
       updateFooterFinishUI();
     }
@@ -1346,7 +1294,7 @@
       if (lastDeletedItem.type === 'report') {
         if (!savedReports.some(r => r.id === lastDeletedItem.data.id)) {
           savedReports.unshift(lastDeletedItem.data);
-          try { localStorage.setItem("CB_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
+          try { localStorage.setItem("BG_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
           if (isFirebaseReady) {
             db.collection("reports").doc(lastDeletedItem.data.id).set(lastDeletedItem.data);
           }
@@ -1354,21 +1302,21 @@
       } else if (lastDeletedItem.type === 'event') {
         if (!calendarEvents.some(e => e.id === lastDeletedItem.data.id)) {
           calendarEvents.push(lastDeletedItem.data);
-          localStorage.setItem("CB_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
+          localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
           syncConfigToCloud();
           renderAgendaCalendar();
         }
       } else if (lastDeletedItem.type === 'tech') {
         if (!techniciansList.some(t => t.name === lastDeletedItem.data.name && t.phone === lastDeletedItem.data.phone)) {
           techniciansList.push(lastDeletedItem.data);
-          localStorage.setItem("CB_LOCAL_TECHNICIANS", JSON.stringify(techniciansList));
+          localStorage.setItem("BG_LOCAL_TECHNICIANS", JSON.stringify(techniciansList));
           syncConfigToCloud();
           renderTechniciansList();
         }
       } else if (lastDeletedItem.type === 'manualAction') {
         if (!manualActionsList.some(a => a.id === lastDeletedItem.data.id)) {
           manualActionsList.push(lastDeletedItem.data);
-          localStorage.setItem("CB_LOCAL_MANUAL_ACTIONS", JSON.stringify(manualActionsList));
+          localStorage.setItem("BG_LOCAL_MANUAL_ACTIONS", JSON.stringify(manualActionsList));
           syncConfigToCloud();
           renderCentralizedActions();
         }
@@ -1486,7 +1434,7 @@
       if (!val) return alert("Digite o nome da loja.");
       if (presetUnits.includes(val)) return alert("Já cadastrada.");
       presetUnits.push(val);
-      localStorage.setItem("CB_LOCAL_UNITS", JSON.stringify(presetUnits));
+      localStorage.setItem("BG_LOCAL_UNITS", JSON.stringify(presetUnits));
       syncConfigToCloud(); input.value = ""; renderPresetUnits(); renderUserUnitsCheckboxes();
     }
 
@@ -1494,7 +1442,7 @@
       const newName = prompt("Editar nome da unidade:", presetUnits[idx]);
       if (newName && newName.trim()) {
         presetUnits[idx] = newName.trim();
-        localStorage.setItem("CB_LOCAL_UNITS", JSON.stringify(presetUnits));
+        localStorage.setItem("BG_LOCAL_UNITS", JSON.stringify(presetUnits));
         syncConfigToCloud(); renderPresetUnits(); renderUserUnitsCheckboxes();
       }
     }
@@ -1503,7 +1451,7 @@
       if (presetUnits.length <= 1) return alert("Mantenha ao menos uma unidade.");
       if (confirm("Excluir unidade?")) {
         presetUnits.splice(idx, 1);
-        localStorage.setItem("CB_LOCAL_UNITS", JSON.stringify(presetUnits));
+        localStorage.setItem("BG_LOCAL_UNITS", JSON.stringify(presetUnits));
         syncConfigToCloud(); renderPresetUnits(); renderUserUnitsCheckboxes();
       }
     }
@@ -1515,7 +1463,7 @@
       if (!val) return alert("Digite o nome do status.");
       if (actionStatuses.some(s => s.name.toLowerCase() === val.toLowerCase())) return alert("Status já cadastrado.");
       actionStatuses.push({ name: val, color });
-      localStorage.setItem("CB_LOCAL_STATUSES", JSON.stringify(actionStatuses));
+      localStorage.setItem("BG_LOCAL_STATUSES", JSON.stringify(actionStatuses));
       syncConfigToCloud(); input.value = ""; renderAdminStatusList();
     }
 
@@ -1523,7 +1471,7 @@
       if (actionStatuses.length <= 1) return alert("Mantenha ao menos um status.");
       if (confirm("Excluir este status?")) {
         actionStatuses.splice(idx, 1);
-        localStorage.setItem("CB_LOCAL_STATUSES", JSON.stringify(actionStatuses));
+        localStorage.setItem("BG_LOCAL_STATUSES", JSON.stringify(actionStatuses));
         syncConfigToCloud(); renderAdminStatusList();
       }
     }
@@ -1547,7 +1495,7 @@
       if (!val) return alert("Digite o nome da tarja.");
       if (actionPriorities.some(p => p.name.toLowerCase() === val.toLowerCase())) return alert("Tarja já cadastrada.");
       actionPriorities.push({ name: val, style });
-      localStorage.setItem("CB_LOCAL_PRIORITIES", JSON.stringify(actionPriorities));
+      localStorage.setItem("BG_LOCAL_PRIORITIES", JSON.stringify(actionPriorities));
       syncConfigToCloud(); input.value = ""; renderAdminPrioritiesList();
     }
 
@@ -1555,7 +1503,7 @@
       if (actionPriorities.length <= 1) return alert("Mantenha ao menos uma tarja.");
       if (confirm("Excluir esta tarja?")) {
         actionPriorities.splice(idx, 1);
-        localStorage.setItem("CB_LOCAL_PRIORITIES", JSON.stringify(actionPriorities));
+        localStorage.setItem("BG_LOCAL_PRIORITIES", JSON.stringify(actionPriorities));
         syncConfigToCloud(); renderAdminPrioritiesList();
       }
     }
@@ -1582,7 +1530,7 @@
       const found = users.find(item => item.username.toLowerCase() === u && item.pass === p);
       if (found) {
         currentUser = found;
-        sessionStorage.setItem("CB_LOCAL_LOGGED_USER", JSON.stringify(found));
+        sessionStorage.setItem("BG_LOCAL_LOGGED_USER", JSON.stringify(found));
         document.getElementById("login-screen").classList.add("hidden");
         document.getElementById("login-error").classList.add("hidden");
         updateLogos();
@@ -1593,7 +1541,7 @@
     }
 
     function handleLogout() { 
-      sessionStorage.removeItem("CB_LOCAL_LOGGED_USER"); 
+      sessionStorage.removeItem("BG_LOCAL_LOGGED_USER"); 
       location.reload(); 
     }
 
@@ -1750,7 +1698,7 @@
       const select = document.getElementById("home-checklist-select");
       if (!select || !select.value) return alert("Selecione um checklist válido.");
       activeChecklistId = select.value;
-      localStorage.setItem("CB_LOCAL_ACTIVE_ID", activeChecklistId);
+      localStorage.setItem("BG_LOCAL_ACTIVE_ID", activeChecklistId);
 
       const chk = getCurrentChecklist();
       document.getElementById("active-model-title-badge").innerText = chk ? chk.name : "Checklist";
@@ -1853,11 +1801,11 @@
       if (confirm("Deseja mover este relatório para a lixeira?")) {
         const itemToDelete = savedReports.find(r => r.id === docId);
         savedReports = savedReports.filter(r => r.id !== docId);
-        try { localStorage.setItem("CB_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
+        try { localStorage.setItem("BG_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
         
         if (itemToDelete) {
           reportsTrashList.push({ ...itemToDelete, deletedAt: new Date().toLocaleDateString('pt-BR') });
-          localStorage.setItem("CB_LOCAL_REPORTS_TRASH", JSON.stringify(reportsTrashList));
+          localStorage.setItem("BG_LOCAL_REPORTS_TRASH", JSON.stringify(reportsTrashList));
         }
 
         if (isFirebaseReady && docId) {
@@ -1911,10 +1859,10 @@
       if (rep) {
         if (!savedReports.some(r => r.id === rep.id)) {
           savedReports.unshift(rep);
-          try { localStorage.setItem("CB_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
+          try { localStorage.setItem("BG_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
           if (isFirebaseReady) db.collection("reports").doc(rep.id).set(rep);
         }
-        localStorage.setItem("CB_LOCAL_REPORTS_TRASH", JSON.stringify(reportsTrashList));
+        localStorage.setItem("BG_LOCAL_REPORTS_TRASH", JSON.stringify(reportsTrashList));
         syncConfigToCloud();
         renderHistoryList();
         renderReportsTrashList();
@@ -1928,7 +1876,7 @@
         if (rep && isFirebaseReady) {
           db.collection("reports").doc(rep.id).delete().catch(err => console.error(err));
         }
-        localStorage.setItem("CB_LOCAL_REPORTS_TRASH", JSON.stringify(reportsTrashList));
+        localStorage.setItem("BG_LOCAL_REPORTS_TRASH", JSON.stringify(reportsTrashList));
         syncConfigToCloud();
         renderReportsTrashList();
         alert("Relatório excluído definitivamente.");
@@ -2040,7 +1988,7 @@
 
         categoriesEvaluationHtml += `
           <div style="margin-bottom: 12px; page-break-inside: avoid;">
-            <div style="background-color: #FAF7F2; border-left: 4px solid #4A0E17; padding: 6px 10px; font-weight: bold; font-size: 11px; color: #4A0E17; text-transform: uppercase;">
+            <div style="background-color: #FAF7F2; border-left: 4px solid #1C1917; padding: 6px 10px; font-weight: bold; font-size: 11px; color: #1C1917; text-transform: uppercase;">
               ${sec.category}
             </div>
             <table style="width: 100%; border-collapse: collapse;">
@@ -2074,7 +2022,7 @@
 
       let photosGridHtml = photosList.map(p => `
         <div style="border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden; page-break-inside: avoid; background: #fff; text-align: center; padding: 6px;">
-          <div style="font-size: 10px; font-weight: bold; color: #4A0E17; margin-bottom: 4px; height: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center;">${p.title}</div>
+          <div style="font-size: 10px; font-weight: bold; color: #1C1917; margin-bottom: 4px; height: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center;">${p.title}</div>
           <img src="${p.url}" style="max-height: 180px; width: auto; max-width: 100%; border-radius: 4px; object-fit: contain; margin: 0 auto; display: block;" alt="${p.title}" />
         </div>
       `).join('');
@@ -2083,21 +2031,21 @@
         <div style="font-family: Arial, Helvetica, sans-serif; padding: 20px; color: #222; max-width: 850px; margin: 0 auto;">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #D4AF37; padding-bottom: 12px; margin-bottom: 16px;">
             <div>
-              <h1 style="color: #4A0E17; font-size: 18px; margin: 0 0 6px 0; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px;">CASA BAUDUCCO - ${currentChk.name.toUpperCase()}</h1>
+              <h1 style="color: #1C1917; font-size: 18px; margin: 0 0 6px 0; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px;">BULGUER GUACO - ${currentChk.name.toUpperCase()}</h1>
               <div style="font-size: 11px; color: #555; line-height: 1.5;">
                 <strong>Data da Auditoria:</strong> ${dateStr}<br>
                 <strong>Unidade:</strong> ${unit} &nbsp;|&nbsp; <strong>Supervisor:</strong> ${supervisor}<br>
                 <strong>Avaliados:</strong> ${total} itens
               </div>
             </div>
-            <div style="text-align: center; min-width: 110px; background: #4A0E17; padding: 8px 12px; border-radius: 8px; color: #fff; border: 1px solid #D4AF37;">
+            <div style="text-align: center; min-width: 110px; background: #1C1917; padding: 8px 12px; border-radius: 8px; color: #fff; border: 1px solid #D4AF37;">
               <span style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #D4AF37; display: block; font-weight: bold;">CONFORMIDADE</span>
               <span style="font-size: 26px; font-weight: 900; color: #fff; line-height: 1.1;">${score}%</span>
             </div>
           </div>
 
           <div style="margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; color: #4A0E17;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; color: #1C1917;">
               <span>Item Avaliado</span>
               <span>Resultado</span>
             </div>
@@ -2106,7 +2054,7 @@
 
           ${notes ? `
           <div style="margin-bottom: 20px; page-break-inside: avoid;">
-            <div style="background-color: #FAF7F2; border-left: 4px solid #D4AF37; padding: 6px 10px; font-weight: bold; font-size: 11px; color: #4A0E17; text-transform: uppercase; margin-bottom: 6px;">
+            <div style="background-color: #FAF7F2; border-left: 4px solid #D4AF37; padding: 6px 10px; font-weight: bold; font-size: 11px; color: #1C1917; text-transform: uppercase; margin-bottom: 6px;">
               OBSERVAÇÕES GERAIS
             </div>
             <div style="padding: 8px 12px; background: #fff; border: 1px solid #e5e5e5; font-size: 11px; line-height: 1.5; color: #333; border-radius: 4px;">
@@ -2115,7 +2063,7 @@
           </div>` : ''}
 
           <div style="margin-bottom: 20px; page-break-inside: avoid;">
-            <div style="background-color: #4A0E17; color: #D4AF37; padding: 6px 10px; font-weight: bold; font-size: 11px; text-transform: uppercase; border-radius: 4px 4px 0 0; display: flex; justify-content: space-between;">
+            <div style="background-color: #1C1917; color: #D4AF37; padding: 6px 10px; font-weight: bold; font-size: 11px; text-transform: uppercase; border-radius: 4px 4px 0 0; display: flex; justify-content: space-between;">
               <span>QUADRO DE NÃO CONFORMIDADES & PLANOS DE AÇÃO</span>
               <span style="color: #fff; font-size: 10px;">Total: ${ncList.length} apontamento(s)</span>
             </div>
@@ -2155,7 +2103,7 @@
 
           ${photosList.length > 0 ? `
           <div style="margin-top: 24px; page-break-before: auto;">
-            <div style="background-color: #4A0E17; color: #D4AF37; padding: 6px 10px; font-weight: bold; font-size: 11px; text-transform: uppercase; border-radius: 4px; margin-bottom: 10px;">
+            <div style="background-color: #1C1917; color: #D4AF37; padding: 6px 10px; font-weight: bold; font-size: 11px; text-transform: uppercase; border-radius: 4px; margin-bottom: 10px;">
               EVIDÊNCIAS FOTOGRÁFICAS ANEXADAS
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -2192,7 +2140,7 @@
       const unit = document.getElementById("unit-selector").value;
       const { score } = calculateScore();
       const dateStr = new Date().toLocaleDateString('pt-BR');
-      let msg = `*Relatório de Supervisão - Casa Bauducco*%0A*Loja:* ${unit}%0A*Data:* ${dateStr}%0A*Conformidade:* ${score}%25%0A%0AConfira os detalhes no sistema.`;
+      let msg = `*Relatório de Supervisão - Bulguer Guaco*%0A*Loja:* ${unit}%0A*Data:* ${dateStr}%0A*Conformidade:* ${score}%25%0A%0AConfira os detalhes no sistema.`;
       window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
     }
 
@@ -2204,7 +2152,7 @@
           <!DOCTYPE html>
           <html>
           <head>
-            <title>Relatório de Supervisão - Casa Bauducco</title>
+            <title>Relatório de Supervisão - Bulguer Guaco</title>
             <style>
               body { margin: 0; padding: 0; background: #fff; }
               @media print {
@@ -2230,14 +2178,13 @@
       }
     }
 
-    // CORREÇÃO APLICADA: Tratamento da exceção de Quota Exceeded do LocalStorage
     function saveReportToCloud(reportData) {
       if (!savedReports.some(r => r.id === reportData.id)) {
         savedReports.unshift(reportData);
       }
 
       try {
-        localStorage.setItem("CB_LOCAL_REPORTS", JSON.stringify(savedReports));
+        localStorage.setItem("BG_LOCAL_REPORTS", JSON.stringify(savedReports));
       } catch (e) {
         console.warn("Aviso: LocalStorage excedeu o limite de quota. O relatório foi mantido na memória/Firestore.", e);
       }
@@ -2342,7 +2289,7 @@
       };
 
       manualActionsList.push(actObj);
-      localStorage.setItem("CB_LOCAL_MANUAL_ACTIONS", JSON.stringify(manualActionsList));
+      localStorage.setItem("BG_LOCAL_MANUAL_ACTIONS", JSON.stringify(manualActionsList));
       syncConfigToCloud();
       toggleNewActionModal();
       renderCentralizedActions();
@@ -2356,7 +2303,7 @@
         return;
       }
       actionCustomStatus[actionId] = newStatus;
-      localStorage.setItem("CB_LOCAL_CUSTOM_STATUS", JSON.stringify(actionCustomStatus));
+      localStorage.setItem("BG_LOCAL_CUSTOM_STATUS", JSON.stringify(actionCustomStatus));
       syncConfigToCloud();
       renderCentralizedActions();
       updateNotificationBadgeCount();
@@ -2431,7 +2378,7 @@
             region: 'Geral',
             phone: contato || '(00) 00000-0000'
           });
-          localStorage.setItem("CB_LOCAL_TECHNICIANS", JSON.stringify(techniciansList));
+          localStorage.setItem("BG_LOCAL_TECHNICIANS", JSON.stringify(techniciansList));
           syncConfigToCloud();
         }
       }
@@ -2469,10 +2416,10 @@
       };
 
       warrantyRecords.push(warrantyObj);
-      localStorage.setItem("CB_LOCAL_WARRANTY_RECORDS", JSON.stringify(warrantyRecords));
+      localStorage.setItem("BG_LOCAL_WARRANTY_RECORDS", JSON.stringify(warrantyRecords));
 
       actionCustomStatus[actionId] = 'Concluído';
-      localStorage.setItem("CB_LOCAL_CUSTOM_STATUS", JSON.stringify(actionCustomStatus));
+      localStorage.setItem("BG_LOCAL_CUSTOM_STATUS", JSON.stringify(actionCustomStatus));
       syncConfigToCloud();
 
       closeMaintenanceResolutionModal();
@@ -2521,7 +2468,7 @@
     function deleteWarrantyRecord(idx) {
       if (confirm("Excluir este registro de garantia?")) {
         warrantyRecords.splice(idx, 1);
-        localStorage.setItem("CB_LOCAL_WARRANTY_RECORDS", JSON.stringify(warrantyRecords));
+        localStorage.setItem("BG_LOCAL_WARRANTY_RECORDS", JSON.stringify(warrantyRecords));
         syncConfigToCloud();
         renderWarrantyList();
       }
@@ -2529,7 +2476,7 @@
 
     function updateActionPriority(actionId, newPriority) {
       actionCustomPriority[actionId] = newPriority;
-      localStorage.setItem("CB_LOCAL_CUSTOM_PRIORITY", JSON.stringify(actionCustomPriority));
+      localStorage.setItem("BG_LOCAL_CUSTOM_PRIORITY", JSON.stringify(actionCustomPriority));
       syncConfigToCloud();
       renderCentralizedActions();
     }
@@ -2569,7 +2516,7 @@
       if (selectedActions.length === 0) return;
 
       let loja = selectedActions[0].unit;
-      let text = `*Follow-up - Planos de Ação (Casa Bauducco)*%0A*Unidade:* ${loja}%0A*Data:* ${new Date().toLocaleDateString('pt-BR')}%0A%0A*Itens Pendentes para Execução:*%0A`;
+      let text = `*Follow-up - Planos de Ação (Bulguer Guaco)*%0A*Unidade:* ${loja}%0A*Data:* ${new Date().toLocaleDateString('pt-BR')}%0A%0A*Itens Pendentes para Execução:*%0A`;
 
       selectedActions.forEach((act, i) => {
         text += `%0A*${i + 1}. ${act.title}*%0A▫️ *Ação:* ${act.action}%0A▫️ *Prazo:* ${act.date}%0A`;
@@ -2612,7 +2559,7 @@
         if (idx >= 0) {
           deletedData = manualActionsList[idx];
           manualActionsList.splice(idx, 1);
-          localStorage.setItem("CB_LOCAL_MANUAL_ACTIONS", JSON.stringify(manualActionsList));
+          localStorage.setItem("BG_LOCAL_MANUAL_ACTIONS", JSON.stringify(manualActionsList));
         }
       } else {
         let rep = savedReports.find(r => r.id === fullReportId);
@@ -2624,7 +2571,7 @@
             deletedData = { ...rep.maintenanceOrders[index], fullReportId, type, index };
             rep.maintenanceOrders.splice(index, 1);
           }
-          try { localStorage.setItem("CB_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
+          try { localStorage.setItem("BG_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
           if (isFirebaseReady) {
             db.collection("reports").doc(fullReportId).update({
               nonConformities: rep.nonConformities || [],
@@ -2635,7 +2582,7 @@
       }
       if (deletedData) {
         trashActionsList.push({ ...deletedData, deletedAt: new Date().toLocaleDateString('pt-BR') });
-        localStorage.setItem("CB_LOCAL_TRASH_ACTIONS", JSON.stringify(trashActionsList));
+        localStorage.setItem("BG_LOCAL_TRASH_ACTIONS", JSON.stringify(trashActionsList));
       }
     }
 
@@ -2693,7 +2640,7 @@
     function permanentDeleteAction(idx) {
       if (confirm("Excluir permanentemente este plano de ação da lixeira?")) {
         trashActionsList.splice(idx, 1);
-        localStorage.setItem("CB_LOCAL_TRASH_ACTIONS", JSON.stringify(trashActionsList));
+        localStorage.setItem("BG_LOCAL_TRASH_ACTIONS", JSON.stringify(trashActionsList));
         syncConfigToCloud();
         renderTrashActionsList();
         alert("Plano de ação excluído permanentemente.");
@@ -2707,18 +2654,18 @@
       if (item.isManual || item.id) {
         if (!manualActionsList.some(a => a.id === item.id)) {
           manualActionsList.push(item);
-          localStorage.setItem("CB_LOCAL_MANUAL_ACTIONS", JSON.stringify(manualActionsList));
+          localStorage.setItem("BG_LOCAL_MANUAL_ACTIONS", JSON.stringify(manualActionsList));
         }
       } else if (item.fullReportId) {
         let rep = savedReports.find(r => r.id === item.fullReportId);
         if (rep) {
           if (item.type === 'nc') rep.nonConformities.push(item);
           if (item.type === 'om') rep.maintenanceOrders.push(item);
-          try { localStorage.setItem("CB_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
+          try { localStorage.setItem("BG_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
         }
       }
 
-      localStorage.setItem("CB_LOCAL_TRASH_ACTIONS", JSON.stringify(trashActionsList));
+      localStorage.setItem("BG_LOCAL_TRASH_ACTIONS", JSON.stringify(trashActionsList));
       syncConfigToCloud();
       renderCentralizedActions();
       renderTrashActionsList();
@@ -2803,10 +2750,10 @@
           div.onclick = () => {
             if (item.type === 'chat_msg') {
               delete unreadChatMessages[item.chatId];
-              localStorage.setItem("CB_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
+              localStorage.setItem("BG_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
             } else {
               readNotifications[item.id] = true;
-              localStorage.setItem("CB_READ_NOTIFICATIONS", JSON.stringify(readNotifications));
+              localStorage.setItem("BG_READ_NOTIFICATIONS", JSON.stringify(readNotifications));
             }
             updateNotificationBadgeCount();
             dropdown.classList.add("hidden");
@@ -2839,8 +2786,8 @@
           readNotifications[item.id] = true;
         }
       });
-      localStorage.setItem("CB_READ_NOTIFICATIONS", JSON.stringify(readNotifications));
-      localStorage.setItem("CB_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
+      localStorage.setItem("BG_READ_NOTIFICATIONS", JSON.stringify(readNotifications));
+      localStorage.setItem("BG_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
       updateNotificationBadgeCount();
       document.getElementById("notification-dropdown").classList.add("hidden");
       alert("Todas as notificações foram limpas!");
@@ -2890,7 +2837,7 @@
             } else {
               delete unreadChatMessages[meta.chatId];
             }
-            localStorage.setItem("CB_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
+            localStorage.setItem("BG_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
             updateNotificationBadgeCount();
           });
       });
@@ -3115,7 +3062,7 @@
       activeChatActionId = chatId;
       if (unreadChatMessages[chatId]) {
         delete unreadChatMessages[chatId];
-        localStorage.setItem("CB_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
+        localStorage.setItem("BG_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
         updateNotificationBadgeCount();
       }
 
@@ -3261,7 +3208,6 @@
       }).then(() => input.value = "");
     }
 
-    // 📅 Agenda & Calendário
     function changeCalendarView(view) {
       currentCalendarView = view;
       document.getElementById("btn-view-month").className = `px-3 py-1.5 font-bold rounded transition ${view === 'month' ? 'bg-cb-bordo text-white' : 'bg-stone-200 text-stone-700'}`;
@@ -3532,7 +3478,7 @@
 
       ev.date = newDate;
       ev.displayDate = newDate.split('-').reverse().join('/');
-      localStorage.setItem("CB_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
+      localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
       syncConfigToCloud();
       renderAgendaCalendar();
     }
@@ -3553,7 +3499,7 @@
           if (m < 0) { h -= 1; m = 30; }
           ev.timeEnd = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
           startY = moveEvent.clientY;
-          localStorage.setItem("CB_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
+          localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
           syncConfigToCloud();
           renderAgendaCalendar();
         }
@@ -3691,7 +3637,7 @@
         calendarEvents.push(evObj);
       }
 
-      localStorage.setItem("CB_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
+      localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
       syncConfigToCloud();
       toggleEventModal();
       renderAgendaCalendar();
@@ -3709,7 +3655,7 @@
       if (confirm("Deseja realmente excluir este evento?")) {
         const itemToDelete = { ...ev };
         calendarEvents = calendarEvents.filter(e => e.id !== id);
-        localStorage.setItem("CB_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
+        localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
         syncConfigToCloud();
         toggleEventModal();
         renderAgendaCalendar();
@@ -3717,7 +3663,6 @@
       }
     }
 
-    // 🔧 Manutenção & Prestadores de Serviço
     function toggleTechModal() {
       document.getElementById("tech-modal").classList.toggle("hidden");
     }
@@ -3739,7 +3684,7 @@
         document.getElementById("tech-modal-title").innerText = "Novo Contato de Manutenção";
         document.getElementById("tech-name").value = "";
         document.getElementById("tech-service").value = "";
-        document.getElementById("tech-region").value = "São José dos Campos";
+        document.getElementById("tech-region").value = "Guaço";
         document.getElementById("tech-phone").value = "";
         btnDel.classList.add("hidden");
       }
@@ -3763,7 +3708,7 @@
         techniciansList.push(techObj);
       }
 
-      localStorage.setItem("CB_LOCAL_TECHNICIANS", JSON.stringify(techniciansList));
+      localStorage.setItem("BG_LOCAL_TECHNICIANS", JSON.stringify(techniciansList));
       syncConfigToCloud();
       toggleTechModal();
       renderTechniciansList();
@@ -3778,7 +3723,7 @@
       if (confirm("Deseja realmente excluir este contato?")) {
         const itemToDelete = techniciansList[parseInt(idx)];
         techniciansList.splice(parseInt(idx), 1);
-        localStorage.setItem("CB_LOCAL_TECHNICIANS", JSON.stringify(techniciansList));
+        localStorage.setItem("BG_LOCAL_TECHNICIANS", JSON.stringify(techniciansList));
         syncConfigToCloud();
         toggleTechModal();
         renderTechniciansList();
@@ -3857,7 +3802,6 @@
       }
     }
 
-    // Configurações Gerais de Checklists
     function toggleConfigModal() {
       if (currentUser?.role === 'operador') return alert("Operadores não possuem permissão para editar checklists.");
       const modal = document.getElementById("config-modal");
@@ -3912,7 +3856,7 @@
       const newName = prompt("Editar nome do checklist:", currentName);
       if (newName && newName.trim()) {
         allChecklists[idx].name = newName.trim();
-        localStorage.setItem("CB_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
+        localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
         syncConfigToCloud();
         renderModelsListInConfig();
         renderHomeChecklistSelect();
@@ -3978,7 +3922,7 @@
       item.type = type;
       item.requirePhoto = requirePhoto;
 
-      localStorage.setItem("CB_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
+      localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
       syncConfigToCloud();
       closeEditQuestionModal();
       renderModalItems();
@@ -3990,7 +3934,7 @@
       const newName = prompt("Editar nome da seção:", current.categories[sIdx].category);
       if (newName?.trim()) {
         current.categories[sIdx].category = newName.trim();
-        localStorage.setItem("CB_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
+        localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
         syncConfigToCloud(); renderModalItems();
       }
     }
@@ -4096,7 +4040,7 @@
       if (users.some(item => item.username === username)) return alert("Login já existente!");
 
       users.push({ username, pass, name, role, units: assignedUnits });
-      localStorage.setItem("CB_LOCAL_USERS", JSON.stringify(users));
+      localStorage.setItem("BG_LOCAL_USERS", JSON.stringify(users));
       syncConfigToCloud();
 
       document.getElementById("new-user-name").value = "";
@@ -4109,7 +4053,7 @@
     function removeUser(idx) {
       if (confirm("Excluir este acesso?")) {
         users.splice(idx, 1);
-        localStorage.setItem("CB_LOCAL_USERS", JSON.stringify(users));
+        localStorage.setItem("BG_LOCAL_USERS", JSON.stringify(users));
         syncConfigToCloud();
         renderUsersList();
       }
@@ -4118,7 +4062,7 @@
     function deleteModel(id) {
       if (confirm("Excluir este modelo de checklist?")) {
         allChecklists = allChecklists.filter(c => c.id !== id);
-        localStorage.setItem("CB_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
+        localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
         syncConfigToCloud();
         renderModelsListInConfig();
       }
@@ -4145,8 +4089,8 @@
       const newId = "checklist-" + Date.now();
       allChecklists.push({ id: newId, name: name, roles: selectedRoles, categories: [{ category: "1. Itens Gerais", items: [] }] });
       activeChecklistId = newId;
-      localStorage.setItem("CB_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
-      localStorage.setItem("CB_LOCAL_ACTIVE_ID", activeChecklistId);
+      localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
+      localStorage.setItem("BG_LOCAL_ACTIVE_ID", activeChecklistId);
       syncConfigToCloud(); 
       document.getElementById("new-checklist-name").value = "";
       renderModelsListInConfig(); 
@@ -4158,7 +4102,7 @@
       const catText = document.getElementById("new-cat-text").value.trim();
       if (!catText) return alert("Nome vazio.");
       getCurrentChecklist().categories.push({ category: catText, items: [] });
-      localStorage.setItem("CB_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
+      localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
       syncConfigToCloud(); document.getElementById("new-cat-text").value = "";
       document.getElementById("new-cat-box").classList.add("hidden"); renderModalItems();
     }
@@ -4168,20 +4112,20 @@
       const itemText = document.getElementById("new-item-text").value.trim();
       if (!itemText) return alert("Digite o título da pergunta.");
       getCurrentChecklist().categories[catIdx].items.push({ title: itemText, type: document.getElementById("new-item-type").value, requirePhoto: document.getElementById("new-item-req-photo").checked });
-      localStorage.setItem("CB_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
+      localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
       syncConfigToCloud(); document.getElementById("new-item-text").value = ""; renderModalItems();
     }
 
     function removeItem(sIdx, iIdx) {
       getCurrentChecklist().categories[sIdx].items.splice(iIdx, 1);
-      localStorage.setItem("CB_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
+      localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
       syncConfigToCloud(); renderModalItems();
     }
 
     function restoreDefaultChecklist() {
       if (confirm("Restaurar padrões?")) {
         allChecklists = JSON.parse(JSON.stringify(defaultTemplates));
-        localStorage.setItem("CB_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
+        localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
         syncConfigToCloud(); renderModelsListInConfig(); alert("Restaurado!");
       }
     }
