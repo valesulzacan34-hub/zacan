@@ -25,9 +25,11 @@
     .border-cb-gold { border-color: var(--bg-primary); }
     .bg-cb-cream { background-color: var(--bg-cream); }
     #sidebar { transition: transform 0.3s ease-in-out; }
-    .event-card { cursor: grab; }
-    .event-card:active { cursor: grabbing; }
-    .resize-handle { height: 4px; width: 100%; cursor: ns-resize; position: absolute; bottom: 0; left: 0; }
+    
+    .drag-handle { cursor: grab; }
+    .drag-handle:active { cursor: grabbing; }
+    .dragging-item { opacity: 0.4; border: 2px dashed #1B5E20; }
+
     @media (min-width: 768px) {
       .app-main, .responsive-container { max-width: 100% !important; width: 100% !important; margin: 0 auto; padding-left: 2rem; padding-right: 2rem; }
     }
@@ -117,9 +119,6 @@
       </button>
       <button onclick="selectModule('actions'); toggleSidebar();" class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-emerald-900 transition flex items-center gap-1.5">
         <span>📋 Planos de Ação</span>
-      </button>
-      <button onclick="selectModule('agenda'); toggleSidebar();" class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-emerald-900 transition flex items-center gap-1.5">
-        <span>📅 Agenda & Calendário</span>
       </button>
       <button onclick="selectModule('technicians'); toggleSidebar();" class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-emerald-900 transition flex items-center gap-1.5">
         <span>🔧 Manutenção</span>
@@ -442,54 +441,6 @@
 
       <div id="technicians-list-container" class="space-y-3"></div>
     </main>
-
-    <!-- MÓDULO 4: AGENDA / CALENDÁRIO COM IA E DRAG & DROP -->
-    <main id="module-agenda-container" class="responsive-container space-y-4 hidden w-full">
-      <div class="bg-gradient-to-r from-cb-bordo to-emerald-900 p-4 rounded-xl shadow-lg border border-stone-200 space-y-2">
-        <h3 class="text-white font-bold text-xs flex items-center gap-2">🤖 Agendamento Inteligente (IA)</h3>
-        <div class="flex gap-2">
-          <input type="text" id="ia-input" placeholder="Ex: Treinamento de Equipe dia 25/08 às 10h" class="flex-1 text-xs border rounded-lg p-2.5 bg-white/90">
-          <button onclick="processarAgendaIA()" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-500 transition shadow-md">Processar</button>
-        </div>
-      </div>
-
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-200 space-y-3">
-        <div class="flex justify-between items-center flex-wrap gap-2">
-          <div>
-            <h2 class="font-bold text-cb-bordo text-sm uppercase tracking-wider">📅 Agenda & Calendário</h2>
-            <p class="text-xs text-stone-500">Arraste os cards entre os dias ou clique para gerenciar</p>
-          </div>
-          <button onclick="openEventModal()" class="px-3 py-2 bg-cb-bordo text-white font-bold text-xs rounded-lg hover:bg-emerald-900 transition">
-            + Novo Evento
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs pt-1 items-center">
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Filtrar Loja / Agenda:</label>
-            <select id="filter-agenda-store" onchange="renderAgendaCalendar()" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-              <option value="GERAL">⭐ Eventos em Comum (Todas as Lojas)</option>
-            </select>
-          </div>
-          <div class="flex gap-1 sm:col-span-2 items-center pt-4">
-            <button onclick="changeCalendarView('month')" id="btn-view-month" class="px-3 py-1.5 bg-cb-bordo text-white font-bold rounded transition">Mês</button>
-            <button onclick="changeCalendarView('week')" id="btn-view-week" class="px-3 py-1.5 bg-stone-200 text-stone-700 font-bold rounded transition">Semana</button>
-            <button onclick="changeCalendarView('day')" id="btn-view-day" class="px-3 py-1.5 bg-stone-200 text-stone-700 font-bold rounded transition">Dia</button>
-          </div>
-          <div class="flex justify-end items-center gap-1 pt-4">
-            <button onclick="navigateCalendar(-1)" class="px-2.5 py-1.5 bg-stone-100 border rounded font-bold hover:bg-stone-200">◀</button>
-            <button onclick="navigateCalendar(0)" class="px-3 py-1.5 bg-stone-100 border rounded font-bold hover:bg-stone-200">Hoje</button>
-            <button onclick="navigateCalendar(1)" class="px-2.5 py-1.5 bg-stone-100 border rounded font-bold hover:bg-stone-200">▶</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-cb-bordo text-white px-4 py-2 rounded-xl text-center font-bold text-sm uppercase tracking-wider shadow-sm" id="calendar-period-title">
-        Mês / Ano
-      </div>
-
-      <div id="calendar-grid-container" class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden"></div>
-    </main>
   </div>
 
   <!-- MODAIS DO SISTEMA -->
@@ -655,67 +606,6 @@
         <div class="flex justify-between items-center pt-2">
           <button id="btn-delete-tech" onclick="deleteTechnicianFromModal()" class="px-3 py-2 bg-rose-100 text-rose-800 font-bold rounded hidden">Excluir</button>
           <button onclick="saveTechnician()" class="flex-1 py-2.5 bg-cb-bordo hover:bg-emerald-900 text-white font-bold rounded uppercase ml-auto">Salvar Contato</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="event-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl border text-xs">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 id="event-modal-title" class="font-bold text-cb-bordo text-sm uppercase">Novo Evento na Agenda</h3>
-        <button onclick="toggleEventModal()" class="font-bold text-stone-400 hover:text-stone-700 text-base">✕</button>
-      </div>
-      <input type="hidden" id="event-edit-id">
-      <div class="space-y-3">
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Título do Evento:</label>
-          <input type="text" id="event-title" placeholder="Ex: Treinamento de Processos..." class="w-full border rounded p-2 bg-stone-50 font-semibold">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Data:</label>
-            <input type="date" id="event-date" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-          </div>
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Tipo de Evento:</label>
-            <select id="event-scope" class="w-full border rounded p-2 bg-stone-50 font-semibold" onchange="toggleEventStoreSelect()">
-              <option value="GERAL">Em Comum (Todas Lojas)</option>
-              <option value="INDIVIDUAL">Individual por Loja</option>
-            </select>
-          </div>
-        </div>
-        <div id="event-store-box" class="hidden">
-          <label class="block font-bold text-stone-600 mb-1">Loja Específica:</label>
-          <select id="event-store" class="w-full border rounded p-2 bg-stone-50 font-semibold"></select>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Horário Início:</label>
-            <input type="time" id="event-time-start" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-          </div>
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Horário Fim:</label>
-            <input type="time" id="event-time-end" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-          </div>
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Recorrência:</label>
-          <select id="event-recurrence" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-            <option value="none">Não se repete</option>
-            <option value="daily">Todos os dias</option>
-            <option value="weekly">Semanal</option>
-            <option value="monthly">Mensal</option>
-            <option value="weekdays">Todos os dias da semana (segunda a sexta)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Descrição / Observações:</label>
-          <textarea id="event-desc" rows="2" placeholder="Detalhes do evento..." class="w-full border rounded p-2 bg-stone-50"></textarea>
-        </div>
-        <div class="flex justify-between items-center pt-2">
-          <button id="btn-delete-event" onclick="deleteCalendarEventFromModal()" class="px-3 py-2 bg-rose-100 text-rose-800 font-bold rounded hidden">Excluir Evento</button>
-          <button onclick="saveCalendarEvent()" class="flex-1 py-2.5 bg-cb-bordo hover:bg-emerald-900 text-white font-bold rounded uppercase ml-auto">Salvar Evento</button>
         </div>
       </div>
     </div>
@@ -893,11 +783,12 @@
                 </div>
                 <div>
                   <label class="block font-bold text-stone-600 mb-1">Frequência:</label>
-                  <select id="new-chk-recur-freq" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+                  <select id="new-chk-recur-freq" onchange="toggleFrequencyFields('new')" class="w-full border rounded p-2 bg-stone-50 font-semibold">
                     <option value="daily">Diário</option>
                     <option value="weekdays">Segunda a Sexta</option>
                     <option value="weekly">Semanal</option>
                     <option value="monthly">Mensal</option>
+                    <option value="specific_date">Data Específica</option>
                   </select>
                 </div>
                 <div>
@@ -905,6 +796,26 @@
                   <input type="time" id="new-chk-recur-time" value="08:00" class="w-full border rounded p-2 bg-stone-50 font-semibold">
                 </div>
               </div>
+
+              <!-- CAMPOS DINÂMICOS DE FREQUÊNCIA -->
+              <div id="new-freq-weekday-box" class="hidden text-xs">
+                <label class="block font-bold text-stone-600 mb-1">Dia da Semana:</label>
+                <select id="new-chk-recur-weekday" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+                  <option value="1">Segunda-feira</option>
+                  <option value="2">Terça-feira</option>
+                  <option value="3">Quarta-feira</option>
+                  <option value="4">Quinta-feira</option>
+                  <option value="5">Sexta-feira</option>
+                  <option value="6">Sábado</option>
+                  <option value="0">Domingo</option>
+                </select>
+              </div>
+
+              <div id="new-freq-date-box" class="hidden text-xs">
+                <label class="block font-bold text-stone-600 mb-1">Data Específica de Execução:</label>
+                <input type="date" id="new-chk-recur-date" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+              </div>
+
               <div>
                 <label class="block font-bold text-stone-600 text-xs mb-1">Lojas Aplicáveis para Agendamento:</label>
                 <div id="new-chk-recur-units-box" class="flex flex-wrap gap-2 text-xs font-semibold"></div>
@@ -952,7 +863,7 @@
           <div class="flex items-center justify-between pt-1">
             <label class="flex items-center gap-1.5 cursor-pointer text-stone-700 text-xs font-medium">
               <input type="checkbox" id="new-item-req-photo" class="rounded text-cb-bordo focus:ring-0">
-              <span>Exigir Foto</span>
+              <span>Exigir Foto (Apenas Não Conforme)</span>
             </label>
             <button onclick="addNewItem()" class="px-4 py-2 bg-cb-bordo hover:bg-emerald-900 text-white text-xs font-bold rounded-lg transition shadow-sm">+ Inserir Pergunta</button>
           </div>
@@ -964,6 +875,88 @@
         <button onclick="toggleConfigModal()" class="bg-stone-900 hover:bg-black text-white font-bold px-6 py-2 rounded-lg transition">Concluir</button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- MODAL DE EDIÇÃO COMPLETA DO MODELO DE CHECKLIST -->
+  <div id="edit-model-modal" class="fixed inset-0 bg-black/70 z-[60] hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-lg rounded-2xl p-5 space-y-4 shadow-2xl border text-xs my-8">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-cb-bordo text-sm uppercase">Editar Modelo de Checklist</h3>
+        <button onclick="closeEditModelModal()" class="font-bold text-stone-400 hover:text-stone-700 text-base">✕</button>
+      </div>
+      <input type="hidden" id="edit-model-idx">
+
+      <div class="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">Nome do Modelo:</label>
+          <input type="text" id="edit-model-name" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">Perfis com Acesso:</label>
+          <div class="flex gap-4 font-semibold text-stone-600">
+            <label><input type="checkbox" id="edit-model-role-admin" value="admin"> Admin</label>
+            <label><input type="checkbox" id="edit-model-role-gerente" value="gerente"> Gerentes</label>
+            <label><input type="checkbox" id="edit-model-role-operador" value="operador"> Operadores</label>
+          </div>
+        </div>
+
+        <div class="border-t pt-3 space-y-2">
+          <span class="block font-bold text-stone-800 uppercase">📅 Agendamento & Recorrência</span>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div>
+              <label class="block font-bold text-stone-600 mb-1">Ativo?</label>
+              <select id="edit-model-recur-active" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+                <option value="false">Não</option>
+                <option value="true">Sim</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-stone-600 mb-1">Frequência:</label>
+              <select id="edit-model-recur-freq" onchange="toggleFrequencyFields('edit')" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+                <option value="daily">Diário</option>
+                <option value="weekdays">Segunda a Sexta</option>
+                <option value="weekly">Semanal</option>
+                <option value="monthly">Mensal</option>
+                <option value="specific_date">Data Específica</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-stone-600 mb-1">Horário Previsto:</label>
+              <input type="time" id="edit-model-recur-time" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+            </div>
+          </div>
+
+          <div id="edit-freq-weekday-box" class="hidden">
+            <label class="block font-bold text-stone-600 mb-1">Dia da Semana:</label>
+            <select id="edit-model-recur-weekday" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+              <option value="1">Segunda-feira</option>
+              <option value="2">Terça-feira</option>
+              <option value="3">Quarta-feira</option>
+              <option value="4">Quinta-feira</option>
+              <option value="5">Sexta-feira</option>
+              <option value="6">Sábado</option>
+              <option value="0">Domingo</option>
+            </select>
+          </div>
+
+          <div id="edit-freq-date-box" class="hidden">
+            <label class="block font-bold text-stone-600 mb-1">Data Específica de Execução:</label>
+            <input type="date" id="edit-model-recur-date" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+          </div>
+
+          <div>
+            <label class="block font-bold text-stone-600 mb-1">Lojas Aplicáveis:</label>
+            <div id="edit-model-units-box" class="flex flex-wrap gap-2 text-xs font-semibold"></div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button onclick="closeEditModelModal()" class="px-4 py-2 border rounded font-bold text-stone-600">Cancelar</button>
+          <button onclick="saveEditedModel()" class="px-5 py-2 bg-cb-bordo text-white font-bold rounded">Salvar Alterações</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -991,7 +984,7 @@
         </div>
         <div class="flex items-center gap-2 pt-2">
           <input type="checkbox" id="edit-q-photo" class="rounded text-cb-bordo">
-          <label for="edit-q-photo" class="font-bold text-stone-700">Exigir foto obrigatoriamente</label>
+          <label for="edit-q-photo" class="font-bold text-stone-700">Exigir foto obrigatoriamente quando Não Conforme</label>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t">
           <button onclick="closeEditQuestionModal()" class="px-4 py-2 border rounded font-bold text-stone-600">Cancelar</button>
@@ -1106,9 +1099,6 @@
       { name: "Suporte Técnico Geral", service: "Atendimento Emergencial", region: "Geral", phone: "(00) 00000-0000" }
     ];
 
-    let calendarEvents = JSON.parse(localStorage.getItem("BG_LOCAL_CALENDAR_EVENTS")) || [];
-    let currentCalendarDate = new Date();
-    let currentCalendarView = 'month';
     let activeChatActionId = null;
     let lastDeletedItem = null;
 
@@ -1194,7 +1184,6 @@
           if (data.statuses) { actionStatuses = data.statuses; localStorage.setItem("BG_LOCAL_STATUSES", JSON.stringify(actionStatuses)); }
           if (data.priorities) { actionPriorities = data.priorities; localStorage.setItem("BG_LOCAL_PRIORITIES", JSON.stringify(actionPriorities)); }
           if (data.technicians) { techniciansList = data.technicians; localStorage.setItem("BG_LOCAL_TECHNICIANS", JSON.stringify(techniciansList)); }
-          if (data.calendarEvents) { calendarEvents = data.calendarEvents; localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents)); }
           if (data.customStatus) { actionCustomStatus = data.customStatus; localStorage.setItem("BG_LOCAL_CUSTOM_STATUS", JSON.stringify(actionCustomStatus)); }
           if (data.customPriority) { actionCustomPriority = data.customPriority; localStorage.setItem("BG_LOCAL_CUSTOM_PRIORITY", JSON.stringify(actionCustomPriority)); }
           if (data.manualActions) { manualActionsList = data.manualActions; localStorage.setItem("BG_LOCAL_MANUAL_ACTIONS", JSON.stringify(manualActionsList)); }
@@ -1205,7 +1194,6 @@
           renderPresetUnits();
           renderHomeChecklistSelect();
           renderDailyScheduledChecklists();
-          renderAgendaCalendar();
           updateSyncUI("🟢 Sincronizado na Nuvem", new Date().toLocaleTimeString('pt-BR'));
         } else {
           syncConfigToCloud();
@@ -1225,7 +1213,6 @@
         updateHistoryBadge();
         renderHistoryList();
         renderCentralizedActions();
-        renderAgendaCalendar();
         listenToAllChats();
       });
     }
@@ -1239,7 +1226,6 @@
         statuses: actionStatuses,
         priorities: actionPriorities,
         technicians: techniciansList,
-        calendarEvents: calendarEvents,
         customStatus: actionCustomStatus,
         customPriority: actionCustomPriority,
         manualActions: manualActionsList,
@@ -1356,13 +1342,6 @@
             db.collection("reports").doc(lastDeletedItem.data.id).set(lastDeletedItem.data);
           }
         }
-      } else if (lastDeletedItem.type === 'event') {
-        if (!calendarEvents.some(e => e.id === lastDeletedItem.data.id)) {
-          calendarEvents.push(lastDeletedItem.data);
-          localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
-          syncConfigToCloud();
-          renderAgendaCalendar();
-        }
       } else if (lastDeletedItem.type === 'tech') {
         if (!techniciansList.some(t => t.name === lastDeletedItem.data.name && t.phone === lastDeletedItem.data.phone)) {
           techniciansList.push(lastDeletedItem.data);
@@ -1409,8 +1388,6 @@
       const select = document.getElementById("unit-selector");
       const filterStore = document.getElementById("filter-store");
       const filterActionStore = document.getElementById("filter-action-store");
-      const filterAgendaStore = document.getElementById("filter-agenda-store");
-      const eventStoreSelect = document.getElementById("event-store");
       const manualActUnit = document.getElementById("manual-action-unit");
       const listContainer = document.getElementById("admin-units-list");
       const allowedUnits = getAllowedUnits();
@@ -1447,31 +1424,6 @@
           const opt = document.createElement("option"); opt.value = u; opt.innerText = u; filterActionStore.appendChild(opt);
         });
         filterActionStore.value = currentFilterAct;
-      }
-
-      if (filterAgendaStore) {
-        const curAgenda = filterAgendaStore.value;
-        if (currentUser && currentUser.role === 'gerente') {
-          filterAgendaStore.innerHTML = "";
-          let managerUnit = currentUser.units && currentUser.units.length > 0 ? currentUser.units[0] : presetUnits[0];
-          let opt = document.createElement("option"); opt.value = managerUnit; opt.innerText = managerUnit; filterAgendaStore.appendChild(opt);
-          filterAgendaStore.value = managerUnit;
-          filterAgendaStore.disabled = true;
-        } else {
-          filterAgendaStore.innerHTML = `<option value="GERAL">⭐ Eventos em Comum (Todas as Lojas)</option>`;
-          allowedUnits.forEach(u => {
-            const opt = document.createElement("option"); opt.value = u; opt.innerText = u; filterAgendaStore.appendChild(opt);
-          });
-          if (curAgenda) filterAgendaStore.value = curAgenda;
-        }
-      }
-
-      if (eventStoreSelect) {
-        eventStoreSelect.innerHTML = "";
-        let unitsToDisplay = currentUser && currentUser.role === 'gerente' && currentUser.units ? currentUser.units : presetUnits;
-        unitsToDisplay.forEach(u => {
-          const opt = document.createElement("option"); opt.value = u; opt.innerText = u; eventStoreSelect.appendChild(opt);
-        });
       }
 
       if (listContainer) {
@@ -1634,9 +1586,9 @@
             <h3 class="font-bold text-amber-900 text-xs uppercase tracking-wider">Planos de Ação</h3>
             <p class="text-[11px] text-stone-500 mt-0.5">Acompanhamento e chat de correções</p>
           </button>
-          <button onclick="selectModule('agenda')" class="p-3.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl transition shadow-sm text-center block w-full">
-            <h3 class="font-bold text-cb-bordo text-xs uppercase tracking-wider">Agenda & Calendário</h3>
-            <p class="text-[11px] text-stone-500 mt-0.5">Eventos e prazos da rede</p>
+          <button onclick="selectModule('technicians')" class="p-3.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl transition shadow-sm text-center block w-full">
+            <h3 class="font-bold text-cb-bordo text-xs uppercase tracking-wider">Manutenção & Garantias</h3>
+            <p class="text-[11px] text-stone-500 mt-0.5">Prestadores de serviço e equipamentos</p>
           </button>`;
       } else if (currentUser.role === 'operador') {
         grid.innerHTML += `
@@ -1662,7 +1614,6 @@
       const checklistsMod = document.getElementById("module-checklists-container");
       const actionsMod = document.getElementById("module-actions-container");
       const techMod = document.getElementById("module-technicians-container");
-      const agendaMod = document.getElementById("module-agenda-container");
       const auditFooter = document.getElementById("audit-footer");
       const badgeMod = document.getElementById("current-module-badge");
 
@@ -1681,7 +1632,6 @@
       checklistsMod.classList.add("hidden");
       actionsMod.classList.add("hidden");
       techMod.classList.add("hidden");
-      agendaMod.classList.add("hidden");
       auditFooter.classList.add("hidden");
 
       if (mod === 'checklists') {
@@ -1697,17 +1647,6 @@
         techMod.classList.remove("hidden");
         badgeMod.innerText = "Manutenção";
         renderTechniciansList();
-      } else if (mod === 'agenda') {
-        if (currentUser.role === 'operador') return alert("Acesso não autorizado para operadores.");
-        agendaMod.classList.remove("hidden");
-        badgeMod.innerText = "Agenda";
-
-        if (currentUser.role === 'gerente' && currentUser.units && currentUser.units.length > 0) {
-          document.getElementById("filter-agenda-store").value = currentUser.units[0];
-          document.getElementById("filter-agenda-store").disabled = true;
-        }
-
-        renderAgendaCalendar();
       }
     }
 
@@ -1753,6 +1692,7 @@
 
       const dayOfWeek = today.getDay(); // 0 Dom, 1 Seg, ..., 6 Sáb
       const dayOfMonth = today.getDate();
+      const todayIso = today.toISOString().split('T')[0];
 
       let scheduledTemplates = allChecklists.filter(c => {
         if (!c.recurrence || !c.recurrence.active) return false;
@@ -1761,8 +1701,12 @@
         const freq = c.recurrence.frequency;
         if (freq === 'daily') return true;
         if (freq === 'weekdays' && dayOfWeek >= 1 && dayOfWeek <= 5) return true;
-        if (freq === 'weekly' && dayOfWeek === 1) return true; // Segunda
-        if (freq === 'monthly' && dayOfMonth === 1) return true; // 1º dia do mês
+        if (freq === 'weekly') {
+          const targetDay = c.recurrence.weekday !== undefined ? parseInt(c.recurrence.weekday) : 1;
+          return dayOfWeek === targetDay;
+        }
+        if (freq === 'monthly' && dayOfMonth === 1) return true;
+        if (freq === 'specific_date' && c.recurrence.specificDate === todayIso) return true;
         return false;
       });
 
@@ -2040,7 +1984,7 @@
     function finishChecklistEvaluation() {
       const missingPhotos = validatePhotos();
       if (missingPhotos.length > 0) {
-        alert(`Atenção: As seguintes perguntas exigem foto obrigatória:\n\n- ${missingPhotos.join('\n- ')}`);
+        alert(`Atenção: As seguintes perguntas exigem foto obrigatória para itens Não Conformes:\n\n- ${missingPhotos.join('\n- ')}`);
         return;
       }
 
@@ -2430,7 +2374,6 @@
       syncConfigToCloud();
       toggleNewActionModal();
       renderCentralizedActions();
-      renderAgendaCalendar();
       alert("Plano de ação criado com sucesso!");
     }
 
@@ -3345,461 +3288,6 @@
       }).then(() => input.value = "");
     }
 
-    function changeCalendarView(view) {
-      currentCalendarView = view;
-      document.getElementById("btn-view-month").className = `px-3 py-1.5 font-bold rounded transition ${view === 'month' ? 'bg-cb-bordo text-white' : 'bg-stone-200 text-stone-700'}`;
-      document.getElementById("btn-view-week").className = `px-3 py-1.5 font-bold rounded transition ${view === 'week' ? 'bg-cb-bordo text-white' : 'bg-stone-200 text-stone-700'}`;
-      document.getElementById("btn-view-day").className = `px-3 py-1.5 font-bold rounded transition ${view === 'day' ? 'bg-cb-bordo text-white' : 'bg-stone-200 text-stone-700'}`;
-      renderAgendaCalendar();
-    }
-
-    function navigateCalendar(dir) {
-      if (dir === 0) {
-        currentCalendarDate = new Date();
-      } else {
-        if (currentCalendarView === 'month') {
-          currentCalendarDate.setMonth(currentCalendarDate.getMonth() + dir);
-        } else if (currentCalendarView === 'week') {
-          currentCalendarDate.setDate(currentCalendarDate.getDate() + (dir * 7));
-        } else if (currentCalendarView === 'day') {
-          currentCalendarDate.setDate(currentCalendarDate.getDate() + dir);
-        }
-      }
-      renderAgendaCalendar();
-    }
-
-    function normalizeDateToISO(dateString) {
-      if (!dateString || dateString === 'Não definida' || dateString === 'Indefinida') return null;
-      if (dateString.includes('-')) return dateString.split('T')[0];
-      if (dateString.includes('/')) {
-        let parts = dateString.split(',')[0].trim().split('/');
-        if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-      }
-      return null;
-    }
-
-    function renderAgendaCalendar() {
-      const gridContainer = document.getElementById("calendar-grid-container");
-      const titleEl = document.getElementById("calendar-period-title");
-      if (!gridContainer) return;
-      gridContainer.innerHTML = "";
-
-      let storeSelection = document.getElementById("filter-agenda-store")?.value || "GERAL";
-      if (currentUser?.role === 'gerente' && currentUser.units && currentUser.units.length > 0) {
-        storeSelection = currentUser.units[0];
-      }
-
-      let allEvents = [];
-
-      calendarEvents.forEach(ev => {
-        let isoDate = normalizeDateToISO(ev.date || ev.displayDate);
-        if (isoDate) {
-          allEvents.push({
-            ...ev,
-            date: isoDate
-          });
-        }
-      });
-
-      savedReports.forEach(rep => {
-        if (currentUser?.role === 'gerente' && rep.unit !== storeSelection) return;
-
-        rep.nonConformities?.forEach((nc, i) => {
-          let isoDate = normalizeDateToISO(nc.date);
-          if (isoDate) {
-            allEvents.push({
-              id: `rep_nc_${rep.id}_${i}`,
-              title: `[Ação] ${nc.title}`,
-              date: isoDate,
-              time: '09:00',
-              timeEnd: '10:00',
-              store: rep.unit,
-              scope: 'INDIVIDUAL',
-              desc: nc.action || 'Não descrita',
-              type: 'action'
-            });
-          }
-        });
-
-        rep.maintenanceOrders?.forEach((om, i) => {
-          let isoDate = normalizeDateToISO(om.date);
-          if (isoDate) {
-            allEvents.push({
-              id: `rep_om_${rep.id}_${i}`,
-              title: `[Manutenção] ${om.equipment}`,
-              date: isoDate,
-              time: '10:00',
-              timeEnd: '11:00',
-              store: rep.unit,
-              scope: 'INDIVIDUAL',
-              desc: om.action || om.defect || 'Sem descrição',
-              type: 'maintenance'
-            });
-          }
-        });
-      });
-
-      manualActionsList.forEach(act => {
-        if (currentUser?.role === 'gerente' && act.unit !== storeSelection) return;
-        let isoDate = normalizeDateToISO(act.rawDate || act.date);
-        if (isoDate) {
-          allEvents.push({
-            id: `act_manual_${act.id}`,
-            title: `[Plano] ${act.title}`,
-            date: isoDate,
-            time: '14:00',
-            timeEnd: '15:00',
-            store: act.unit,
-            scope: 'INDIVIDUAL',
-            desc: act.action,
-            type: 'action'
-          });
-        }
-      });
-
-      let filteredEvents = allEvents.filter(ev => {
-        if (storeSelection === 'GERAL') return ev.scope === 'GERAL';
-        return ev.scope === 'GERAL' || ev.store === storeSelection;
-      });
-
-      let year = currentCalendarDate.getFullYear();
-      let month = currentCalendarDate.getMonth();
-      const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-
-      if (currentCalendarView === 'month') {
-        titleEl.innerText = `${monthNames[month]} de ${year}`;
-        let firstDayIndex = new Date(year, month, 1).getDay();
-        let totalDays = new Date(year, month + 1, 0).getDate();
-
-        let table = document.createElement("div");
-        table.className = "grid grid-cols-7 text-xs text-center border-stone-200";
-
-        ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(d => {
-          let cell = document.createElement("div");
-          cell.className = "bg-cb-bordo text-white font-bold p-2 border-b";
-          cell.innerText = d;
-          table.appendChild(cell);
-        });
-
-        for (let i = 0; i < firstDayIndex; i++) {
-          let emptyCell = document.createElement("div");
-          emptyCell.className = "bg-stone-50/50 p-2 border-b border-r min-h-[90px]";
-          table.appendChild(emptyCell);
-        }
-
-        for (let d = 1; d <= totalDays; d++) {
-          let dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-          let dayEvents = filteredEvents.filter(e => e.date === dateStr);
-
-          let cell = document.createElement("div");
-          cell.className = "bg-white p-1.5 border-b border-r min-h-[90px] flex flex-col justify-start text-left overflow-hidden cursor-pointer hover:bg-stone-50 relative";
-          cell.setAttribute('data-date', dateStr);
-
-          cell.ondragover = (e) => e.preventDefault();
-          cell.ondrop = (e) => {
-            e.preventDefault();
-            let evId = e.dataTransfer.getData("text/plain");
-            moveEventToDate(evId, dateStr);
-          };
-
-          cell.onclick = (e) => {
-            if (e.target.tagName !== 'DIV' && e.target.tagName !== 'SPAN') return;
-            openEventModalForDate(dateStr);
-          };
-
-          let todayStr = new Date().toISOString().split('T')[0];
-          let isToday = dateStr === todayStr;
-
-          let eventsHtml = dayEvents.map(ev => {
-            let isAuto = ev.type === 'action' || ev.type === 'maintenance';
-            let bgClass = isAuto ? 'bg-amber-100 text-amber-900 border-amber-300' : (ev.scope === 'GERAL' ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-sky-100 text-sky-900 border-sky-300');
-            return `
-              <div draggable="true" 
-                   ondragstart="event.dataTransfer.setData('text/plain', '${ev.id}')"
-                   onclick="event.stopPropagation(); openEventDetail('${ev.id}')" 
-                   class="event-card px-1.5 py-0.5 rounded border text-[10px] font-semibold truncate cursor-pointer mb-0.5 ${bgClass} relative group" 
-                   title="${ev.title}">
-                • ${ev.time ? ev.time + ' ' : ''}${ev.title}
-                <div class="resize-handle opacity-0 group-hover:opacity-100 bg-black/20" onmousedown="initResize(event, '${ev.id}')" title="Redimensionar horário"></div>
-              </div>`;
-          }).join("");
-
-          cell.innerHTML = `
-            <div class="font-bold text-stone-700 mb-1 flex justify-between items-center pointer-events-none">
-              <span class="${isToday ? 'bg-cb-bordo text-white px-1.5 py-0.5 rounded-full' : ''}">${d}</span>
-            </div>
-            <div class="flex-1 overflow-y-auto space-y-0.5 max-h-[70px]">${eventsHtml}</div>`;
-          table.appendChild(cell);
-        }
-        gridContainer.appendChild(table);
-
-      } else if (currentCalendarView === 'week') {
-        let currDate = new Date(currentCalendarDate);
-        let firstDayOfWeek = new Date(currDate.setDate(currDate.getDate() - currDate.getDay()));
-        let lastDayOfWeek = new Date(firstDayOfWeek);
-        lastDayOfWeek.setDate(lastDayOfWeek.getDate() + 6);
-
-        titleEl.innerText = `Semana: ${firstDayOfWeek.toLocaleDateString('pt-BR')} a ${lastDayOfWeek.toLocaleDateString('pt-BR')}`;
-
-        let table = document.createElement("div");
-        table.className = "divide-y text-xs";
-
-        for (let i = 0; i < 7; i++) {
-          let loopDate = new Date(firstDayOfWeek);
-          loopDate.setDate(loopDate.getDate() + i);
-          let dateStr = loopDate.toISOString().split('T')[0];
-          let dayEvents = filteredEvents.filter(e => e.date === dateStr);
-
-          let row = document.createElement("div");
-          row.className = "p-3 flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center bg-white hover:bg-stone-50 transition cursor-pointer";
-          row.ondragover = (e) => e.preventDefault();
-          row.ondrop = (e) => {
-            e.preventDefault();
-            let evId = e.dataTransfer.getData("text/plain");
-            moveEventToDate(evId, dateStr);
-          };
-          row.onclick = () => openEventModalForDate(dateStr);
-
-          let eventsHtml = dayEvents.map(ev => `
-            <span draggable="true" 
-                  ondragstart="event.dataTransfer.setData('text/plain', '${ev.id}')"
-                  onclick="event.stopPropagation(); openEventDetail('${ev.id}')" 
-                  class="event-card px-2.5 py-1 bg-amber-100 text-amber-900 border rounded font-semibold text-[11px] cursor-pointer hover:bg-amber-200">
-              ${ev.time ? ev.time + ' - ' : ''}${ev.title}
-            </span>`).join(" ");
-
-          row.innerHTML = `
-            <div class="font-bold text-cb-bordo w-36 pointer-events-none">${loopDate.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}</div>
-            <div class="flex-1 flex gap-2 flex-wrap items-center">${eventsHtml || '<span class="text-stone-400 italic">Nenhum evento neste dia</span>'}</div>`;
-          table.appendChild(row);
-        }
-        gridContainer.appendChild(table);
-
-      } else if (currentCalendarView === 'day') {
-        let dateStr = currentCalendarDate.toISOString().split('T')[0];
-        titleEl.innerText = `Dia: ${currentCalendarDate.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}`;
-
-        let dayEvents = filteredEvents.filter(e => e.date === dateStr);
-        let listDiv = document.createElement("div");
-        listDiv.className = "p-4 space-y-3 text-xs";
-
-        if (dayEvents.length === 0) {
-          listDiv.innerHTML = `<div class="text-center text-stone-400 py-6">Nenhum compromisso ou evento agendado para hoje. <button onclick="openEventModalForDate('${dateStr}')" class="text-cb-bordo font-bold underline block mx-auto mt-1">+ Criar Evento</button></div>`;
-        } else {
-          dayEvents.forEach(ev => {
-            let item = document.createElement("div");
-            item.className = "p-3 bg-stone-50 border rounded-xl flex justify-between items-center";
-            item.innerHTML = `
-              <div class="space-y-1">
-                <span class="font-bold text-sm text-cb-bordo block">${ev.time ? '⏰ ' + ev.time + ' — ' : ''}${ev.title}</span>
-                <span class="text-stone-600">${ev.desc}</span>
-                <span class="text-[10px] text-stone-400 block">Loja: ${ev.store}</span>
-              </div>
-              <button onclick="openEventDetail('${ev.id}')" class="px-3 py-1.5 bg-cb-bordo text-white font-bold rounded">Detalhes / Editar</button>`;
-            listDiv.appendChild(item);
-          });
-        }
-        gridContainer.appendChild(listDiv);
-      }
-    }
-
-    function moveEventToDate(eventId, newDate) {
-      let ev = calendarEvents.find(e => e.id === eventId);
-      if (!ev) return;
-      if (ev.scope === 'GERAL' && currentUser.role !== 'admin') {
-        return alert("Apenas administradores podem alterar eventos em comum.");
-      }
-      if (currentUser.role === 'gerente' && ev.store !== currentUser.units?.[0]) {
-        return alert("Você só pode mover eventos da sua própria unidade.");
-      }
-
-      ev.date = newDate;
-      ev.displayDate = newDate.split('-').reverse().join('/');
-      localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
-      syncConfigToCloud();
-      renderAgendaCalendar();
-    }
-
-    function initResize(e, eventId) {
-      e.stopPropagation();
-      e.preventDefault();
-      let ev = calendarEvents.find(e => e.id === eventId);
-      if (!ev) return;
-
-      let startY = e.clientY;
-      function onMouseMove(moveEvent) {
-        let diff = moveEvent.clientY - startY;
-        if (Math.abs(diff) > 25) {
-          let [h, m] = (ev.timeEnd || '10:00').split(':').map(Number);
-          m += diff > 0 ? 30 : -30;
-          if (m >= 60) { h += 1; m = 0; }
-          if (m < 0) { h -= 1; m = 30; }
-          ev.timeEnd = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-          startY = moveEvent.clientY;
-          localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
-          syncConfigToCloud();
-          renderAgendaCalendar();
-        }
-      }
-
-      function onMouseUp() {
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', onMouseUp);
-      }
-
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
-    }
-
-    function processarAgendaIA() {
-      const texto = document.getElementById("ia-input").value;
-      if (!texto) return alert("Digite um comando para a IA.");
-
-      let novoEvento = { title: texto.split(/dia|às/i)[0].trim(), data: "", hora: "09:00", loja: "" };
-
-      const dataMatch = texto.match(/\d{2}\/\d{2}(\/\d{4})?/);
-      if (dataMatch) {
-          let partes = dataMatch[0].split('/');
-          let ano = partes[2] || new Date().getFullYear();
-          novoEvento.data = `${ano}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-      }
-
-      presetUnits.forEach(u => {
-          if (texto.toLowerCase().includes(u.toLowerCase().split(' ').slice(1).join(' '))) novoEvento.loja = u;
-      });
-
-      document.getElementById("event-title").value = novoEvento.title;
-      document.getElementById("event-date").value = novoEvento.data || new Date().toISOString().split('T')[0];
-      document.getElementById("event-time-start").value = novoEvento.hora;
-
-      if (novoEvento.loja) {
-          document.getElementById("event-scope").value = "INDIVIDUAL";
-          document.getElementById("event-store").value = novoEvento.loja;
-          toggleEventStoreSelect();
-      }
-
-      document.getElementById("event-modal").classList.remove("hidden");
-      document.getElementById("ia-input").value = "";
-    }
-
-    function openEventModalForDate(dateStr) {
-      if (currentUser.role === 'operador') return alert("Acesso não autorizado.");
-      document.getElementById("event-modal-title").innerText = "Novo Evento na Agenda";
-      document.getElementById("event-edit-id").value = "";
-      document.getElementById("event-title").value = "";
-      document.getElementById("event-date").value = dateStr;
-      document.getElementById("event-time-start").value = "09:00";
-      document.getElementById("event-time-end").value = "10:00";
-      document.getElementById("event-recurrence").value = "none";
-      document.getElementById("event-desc").value = "";
-
-      let scopeSelect = document.getElementById("event-scope");
-      if (currentUser.role === 'gerente') {
-        scopeSelect.value = 'INDIVIDUAL';
-        scopeSelect.disabled = true;
-      } else {
-        scopeSelect.value = 'GERAL';
-        scopeSelect.disabled = false;
-      }
-      toggleEventStoreSelect();
-      document.getElementById("btn-delete-event").classList.add("hidden");
-      document.getElementById("event-modal").classList.remove("hidden");
-    }
-
-    function openEventDetail(id) {
-      let ev = calendarEvents.find(e => e.id === id);
-      if (!ev) return;
-
-      if (ev.scope === 'GERAL' && currentUser.role !== 'admin') {
-        return alert(`Evento em Comum da Rede: ${ev.title}\nData: ${ev.displayDate || ev.date}\n${ev.desc}\n\n(Apenas administradores podem editar este evento).`);
-      }
-      if (currentUser.role === 'gerente' && ev.store !== currentUser.units?.[0]) {
-        return alert("Você só pode editar eventos da sua própria unidade.");
-      }
-
-      document.getElementById("event-modal-title").innerText = "Editar Evento";
-      document.getElementById("event-edit-id").value = ev.id;
-      document.getElementById("event-title").value = ev.title;
-      document.getElementById("event-date").value = ev.date;
-      document.getElementById("event-scope").value = ev.scope;
-      document.getElementById("event-store").value = ev.store || '';
-      document.getElementById("event-time-start").value = ev.time || '09:00';
-      document.getElementById("event-time-end").value = ev.timeEnd || '10:00';
-      document.getElementById("event-recurrence").value = ev.recurrence || 'none';
-      document.getElementById("event-desc").value = ev.desc || '';
-
-      toggleEventStoreSelect();
-      document.getElementById("btn-delete-event").classList.remove("hidden");
-      document.getElementById("event-modal").classList.remove("hidden");
-    }
-
-    function openEventModal() {
-      openEventModalForDate(new Date().toISOString().split('T')[0]);
-    }
-
-    function toggleEventModal() {
-      document.getElementById("event-modal").classList.toggle("hidden");
-    }
-
-    function toggleEventStoreSelect() {
-      let scope = document.getElementById("event-scope").value;
-      let box = document.getElementById("event-store-box");
-      if (scope === 'INDIVIDUAL') box.classList.remove("hidden");
-      else box.classList.add("hidden");
-    }
-
-    function saveCalendarEvent() {
-      let id = document.getElementById("event-edit-id").value || "ev_" + Date.now();
-      let title = document.getElementById("event-title").value.trim();
-      let date = document.getElementById("event-date").value;
-      let scope = document.getElementById("event-scope").value;
-      let store = scope === 'INDIVIDUAL' ? (currentUser.role === 'gerente' ? currentUser.units[0] : document.getElementById("event-store").value) : 'GERAL';
-      let time = document.getElementById("event-time-start").value;
-      let timeEnd = document.getElementById("event-time-end").value;
-      let recurrence = document.getElementById("event-recurrence").value;
-      let desc = document.getElementById("event-desc").value.trim();
-
-      if (!title || !date) return alert("Preencha o título e a data do evento.");
-      if (scope === 'GERAL' && currentUser.role !== 'admin') return alert("Apenas administradores podem criar ou editar eventos em comum para toda a rede.");
-
-      let existingIdx = calendarEvents.findIndex(e => e.id === id);
-      let evObj = { id, title, date, displayDate: date.split('-').reverse().join('/'), store, scope, time, timeEnd, recurrence, desc, type: 'manual' };
-
-      if (existingIdx >= 0) {
-        if (calendarEvents[existingIdx].scope === 'GERAL' && currentUser.role !== 'admin') {
-          return alert("Apenas administradores podem modificar eventos em comum.");
-        }
-        calendarEvents[existingIdx] = evObj;
-      } else {
-        calendarEvents.push(evObj);
-      }
-
-      localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
-      syncConfigToCloud();
-      toggleEventModal();
-      renderAgendaCalendar();
-      alert("Evento salvo com sucesso na agenda!");
-    }
-
-    function deleteCalendarEventFromModal() {
-      let id = document.getElementById("event-edit-id").value;
-      if (!id) return;
-      let ev = calendarEvents.find(e => e.id === id);
-      if (ev && ev.scope === 'GERAL' && currentUser.role !== 'admin') {
-        return alert("Apenas administradores podem excluir eventos em comum.");
-      }
-
-      if (confirm("Deseja realmente excluir este evento?")) {
-        const itemToDelete = { ...ev };
-        calendarEvents = calendarEvents.filter(e => e.id !== id);
-        localStorage.setItem("BG_LOCAL_CALENDAR_EVENTS", JSON.stringify(calendarEvents));
-        syncConfigToCloud();
-        toggleEventModal();
-        renderAgendaCalendar();
-        triggerUndoToast("Evento da Agenda", "event", itemToDelete);
-      }
-    }
-
     function toggleTechModal() {
       document.getElementById("tech-modal").classList.toggle("hidden");
     }
@@ -3967,6 +3455,22 @@
       }
     }
 
+    function toggleFrequencyFields(prefix) {
+      const freq = document.getElementById(`${prefix}-chk-recur-freq`)?.value || document.getElementById(`${prefix}-model-recur-freq`)?.value;
+      const weekdayBox = document.getElementById(`${prefix}-freq-weekday-box`);
+      const dateBox = document.getElementById(`${prefix}-freq-date-box`);
+
+      if (weekdayBox) {
+        if (freq === 'weekly') weekdayBox.classList.remove("hidden");
+        else weekdayBox.classList.add("hidden");
+      }
+
+      if (dateBox) {
+        if (freq === 'specific_date') dateBox.classList.remove("hidden");
+        else dateBox.classList.add("hidden");
+      }
+    }
+
     function renderModelsListInConfig() {
       const container = document.getElementById("models-list-container");
       container.innerHTML = "";
@@ -3980,7 +3484,7 @@
           <div class="flex justify-between items-center">
             <span class="font-bold text-cb-bordo text-sm block">${c.name}</span>
             <div class="flex gap-2">
-              <button onclick="editChecklistName(${idx})" class="text-blue-600 font-bold hover:underline">Editar</button>
+              <button onclick="openEditModelModal(${idx})" class="text-blue-600 font-bold hover:underline">Editar Completo</button>
               <button onclick="activeChecklistId='${c.id}'; switchConfigTab('items');" class="text-cb-bordo font-bold hover:underline">Perguntas</button>
               ${allChecklists.length > 1 ? `<button onclick="deleteModel('${c.id}')" class="text-rose-600 font-bold hover:underline">Excluir</button>` : ''}
             </div>
@@ -3993,19 +3497,88 @@
       });
     }
 
-    function editChecklistName(idx) {
-      const currentObj = allChecklists[idx];
-      const newName = prompt("Editar nome do checklist:", currentObj.name);
-      if (newName && newName.trim()) {
-        currentObj.name = newName.trim();
-        localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
-        syncConfigToCloud();
-        renderModelsListInConfig();
-        renderHomeChecklistSelect();
-        renderDailyScheduledChecklists();
-        alert("Modelo atualizado com sucesso!");
-      }
+    function openEditModelModal(idx) {
+      const c = allChecklists[idx];
+      document.getElementById("edit-model-idx").value = idx;
+      document.getElementById("edit-model-name").value = c.name;
+
+      const roles = c.roles || ["admin", "gerente", "operador"];
+      document.getElementById("edit-model-role-admin").checked = roles.includes("admin");
+      document.getElementById("edit-model-role-gerente").checked = roles.includes("gerente");
+      document.getElementById("edit-model-role-operador").checked = roles.includes("operador");
+
+      const rec = c.recurrence || { active: false, frequency: 'daily', time: '08:00', units: [] };
+      document.getElementById("edit-model-recur-active").value = rec.active ? "true" : "false";
+      document.getElementById("edit-model-recur-freq").value = rec.frequency || "daily";
+      document.getElementById("edit-model-recur-time").value = rec.time || "08:00";
+      document.getElementById("edit-model-recur-weekday").value = rec.weekday !== undefined ? rec.weekday : "1";
+      document.getElementById("edit-model-recur-date").value = rec.specificDate || "";
+
+      toggleFrequencyFields('edit');
+
+      const unitsBox = document.getElementById("edit-model-units-box");
+      unitsBox.innerHTML = "";
+      const selectedUnits = rec.units || [];
+      presetUnits.forEach(u => {
+        const isChecked = selectedUnits.length === 0 || selectedUnits.includes(u);
+        const label = document.createElement("label");
+        label.className = "flex items-center gap-1 cursor-pointer bg-stone-50 border p-1 rounded";
+        label.innerHTML = `<input type="checkbox" name="edit-model-unit" value="${u}" ${isChecked ? 'checked' : ''}> <span>${u}</span>`;
+        unitsBox.appendChild(label);
+      });
+
+      document.getElementById("edit-model-modal").classList.remove("hidden");
     }
+
+    function closeEditModelModal() {
+      document.getElementById("edit-model-modal").classList.add("hidden");
+    }
+
+    function saveEditedModel() {
+      const idx = parseInt(document.getElementById("edit-model-idx").value);
+      const name = document.getElementById("edit-model-name").value.trim();
+      if (!name) return alert("Digite um nome válido para o modelo.");
+
+      let selectedRoles = [];
+      if (document.getElementById("edit-model-role-admin").checked) selectedRoles.push("admin");
+      if (document.getElementById("edit-model-role-gerente").checked) selectedRoles.push("gerente");
+      if (document.getElementById("edit-model-role-operador").checked) selectedRoles.push("operador");
+
+      const active = document.getElementById("edit-model-recur-active").value === "true";
+      const freq = document.getElementById("edit-model-recur-freq").value;
+      const time = document.getElementById("edit-model-recur-time").value || "08:00";
+      const weekday = document.getElementById("edit-model-recur-weekday").value;
+      const specificDate = document.getElementById("edit-model-recur-date").value;
+
+      let selectedUnits = [];
+      document.querySelectorAll('input[name="edit-model-unit"]:checked').forEach(cb => {
+        selectedUnits.push(cb.value);
+      });
+
+      let model = allChecklists[idx];
+      model.name = name;
+      model.roles = selectedRoles;
+      model.recurrence = {
+        active: active,
+        frequency: freq,
+        time: time,
+        weekday: weekday,
+        specificDate: specificDate,
+        units: selectedUnits
+      };
+
+      localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
+      syncConfigToCloud();
+      closeEditModelModal();
+      renderModelsListInConfig();
+      renderHomeChecklistSelect();
+      renderDailyScheduledChecklists();
+      alert("Modelo de checklist atualizado com sucesso!");
+    }
+
+    // DRAG AND DROP PARA REORDENAÇÃO DE PERGUNTAS
+    let draggedSecIdx = null;
+    let draggedItemIdx = null;
 
     function renderModalItems() {
       const container = document.getElementById("modal-item-list");
@@ -4019,20 +3592,58 @@
         secBox.className = "border rounded-xl p-3 bg-white space-y-2 text-xs";
         secBox.innerHTML = `<div class="flex justify-between items-center border-b pb-1"><span class="font-bold uppercase">${sec.category}</span><button onclick="editCategory(${sIdx})" class="underline font-bold">Editar Seção</button></div>`;
 
+        const itemsContainer = document.createElement("div");
+        itemsContainer.className = "space-y-1.5";
+
         sec.items.forEach((item, iIdx) => {
           let typeLabel = item.type === 'maintenance' ? 'Manutenção' : item.type === 'stars' ? 'Estrelas' : item.type === 'text' ? 'Texto' : 'Sim/Não';
-          secBox.innerHTML += `
-            <div class="bg-stone-50 p-2.5 rounded border flex justify-between items-center gap-2">
+          const itemEl = document.createElement("div");
+          itemEl.className = "bg-stone-50 p-2.5 rounded border flex justify-between items-center gap-2 drag-handle";
+          itemEl.setAttribute("draggable", "true");
+
+          itemEl.ondragstart = (e) => {
+            draggedSecIdx = sIdx;
+            draggedItemIdx = iIdx;
+            itemEl.classList.add("dragging-item");
+            e.dataTransfer.effectAllowed = "move";
+          };
+
+          itemEl.ondragend = () => {
+            itemEl.classList.remove("dragging-item");
+            draggedSecIdx = null;
+            draggedItemIdx = null;
+          };
+
+          itemEl.ondragover = (e) => e.preventDefault();
+
+          itemEl.ondrop = (e) => {
+            e.preventDefault();
+            if (draggedSecIdx === sIdx && draggedItemIdx !== null && draggedItemIdx !== iIdx) {
+              const items = current.categories[sIdx].items;
+              const movedItem = items.splice(draggedItemIdx, 1)[0];
+              items.splice(iIdx, 0, movedItem);
+              localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
+              syncConfigToCloud();
+              renderModalItems();
+            }
+          };
+
+          itemEl.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="text-stone-400 font-bold">☰</span>
               <div class="space-y-0.5">
                 <span class="font-bold text-stone-900 block">${item.title}</span>
-                <span class="text-[10px] text-stone-500 font-medium">[Tipo: ${typeLabel}] • [Foto: ${item.requirePhoto ? 'Obrigatória' : 'Opcional'}]</span>
+                <span class="text-[10px] text-stone-500 font-medium">[Tipo: ${typeLabel}] • [Foto NC: ${item.requirePhoto ? 'Sim' : 'Não'}]</span>
               </div>
-              <div class="flex gap-2 shrink-0">
-                <button onclick="openEditQuestionModal(${sIdx}, ${iIdx})" class="text-blue-600 font-bold hover:underline">Configurar</button>
-                <button onclick="removeItem(${sIdx}, ${iIdx})" class="text-rose-600 font-bold hover:underline">Remover</button>
-              </div>
+            </div>
+            <div class="flex gap-2 shrink-0">
+              <button onclick="openEditQuestionModal(${sIdx}, ${iIdx})" class="text-blue-600 font-bold hover:underline">Configurar</button>
+              <button onclick="removeItem(${sIdx}, ${iIdx})" class="text-rose-600 font-bold hover:underline">Remover</button>
             </div>`;
+          itemsContainer.appendChild(itemEl);
         });
+
+        secBox.appendChild(itemsContainer);
         container.appendChild(secBox);
       });
     }
@@ -4234,6 +3845,8 @@
       const isRecurActive = document.getElementById("new-chk-recur-active").value === "true";
       const recurFreq = document.getElementById("new-chk-recur-freq").value;
       const recurTime = document.getElementById("new-chk-recur-time").value || "08:00";
+      const recurWeekday = document.getElementById("new-chk-recur-weekday").value;
+      const recurDate = document.getElementById("new-chk-recur-date").value;
 
       let selectedRecurUnits = [];
       document.querySelectorAll('input[name="new-chk-recur-unit"]:checked').forEach(cb => {
@@ -4249,6 +3862,8 @@
           active: isRecurActive,
           frequency: recurFreq,
           time: recurTime,
+          weekday: recurWeekday,
+          specificDate: recurDate,
           units: selectedRecurUnits
         },
         categories: [{ category: "1. Itens Gerais", items: [] }]
@@ -4334,7 +3949,6 @@
         document.getElementById("home-btn-config").classList.add("hidden");
       }
 
-      renderAgendaCalendar();
       renderDailyScheduledChecklists();
       openModulesScreen();
     }
@@ -4496,7 +4110,7 @@
 
           return `
           <div class="p-3.5 border-t flex flex-col gap-2.5">
-            <div class="flex justify-between items-start gap-2"><span class="text-sm font-medium">${item.title}</span>${item.requirePhoto ? '<span class="text-[10px] bg-amber-50 text-amber-800 border px-1.5 rounded font-bold">Foto Obrigatória</span>' : ''}</div>
+            <div class="flex justify-between items-start gap-2"><span class="text-sm font-medium">${item.title}</span>${item.requirePhoto ? '<span class="text-[10px] bg-amber-50 text-amber-800 border px-1.5 rounded font-bold">Foto Obrigatória (se NC)</span>' : ''}</div>
             ${controlHtml}
             
             <div class="space-y-1.5 pt-1">
@@ -4551,6 +4165,7 @@
       }
     }
 
+    // FOTO OBRIGATÓRIA CONDICIONAL APENAS SE FOR NÃO CONFORME / ABRIR OM
     function validatePhotos() {
       let missing = [];
       const current = getCurrentChecklist();
@@ -4558,10 +4173,11 @@
         sec.items.forEach((item, iIdx) => {
           const key = `${sIdx}-${iIdx}`;
           const photos = getPhotosArray(key);
-          if (item.requirePhoto && photos.length === 0) {
-            const isNc = customAnswers[key] === 'nao-conforme';
-            const isOm = customAnswers[key] === 'abrir';
-            if (isNc || isOm) missing.push(item.title);
+          const isNc = customAnswers[key] === 'nao-conforme';
+          const isOm = customAnswers[key] === 'abrir';
+
+          if (item.requirePhoto && (isNc || isOm) && photos.length === 0) {
+            missing.push(item.title);
           }
         });
       });
