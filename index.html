@@ -879,6 +879,13 @@
                 <option value="always">Exigir Foto Sempre (Obrigatória)</option>
               </select>
             </div>
+            <div>
+              <label class="block font-bold text-stone-600 text-[11px] mb-1">Gera Plano de Ação?</label>
+              <select id="new-item-gera-plano" class="text-xs border rounded-lg p-1.5 bg-stone-50 font-semibold text-stone-700">
+                <option value="true">Sim</option>
+                <option value="false">Não</option>
+              </select>
+            </div>
             <button onclick="addNewItem()" class="px-4 py-2 bg-cb-bordo hover:bg-emerald-900 text-white text-xs font-bold rounded-lg transition shadow-sm ml-auto">+ Inserir Pergunta</button>
           </div>
         </div>
@@ -1010,6 +1017,13 @@
             <option value="none">Não Exigir Foto (Opcional)</option>
             <option value="nc">Exigir Foto (Apenas Não Conforme)</option>
             <option value="always">Exigir Foto Sempre (Obrigatória)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-stone-600 mb-1">Gera Plano de Ação?</label>
+          <select id="edit-q-gera-plano" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+            <option value="true">Sim</option>
+            <option value="false">Não</option>
           </select>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t">
@@ -1152,32 +1166,32 @@
           {
             category: "1. Fachada & Visual",
             items: [
-              { title: "Fachada da loja, iluminação e sinalização", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Limpeza da área externa e salão", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Conservação das mesas e assentos", type: "boolean", requirePhoto: false, photoMode: "none" }
+              { title: "Fachada da loja, iluminação e sinalização", type: "boolean", requirePhoto: true, photoMode: "nc", geraPlanoAcao: true },
+              { title: "Limpeza da área externa e salão", type: "boolean", requirePhoto: true, photoMode: "nc", geraPlanoAcao: true },
+              { title: "Conservação das mesas e assentos", type: "boolean", requirePhoto: false, photoMode: "none", geraPlanoAcao: true }
             ]
           },
           {
             category: "2. Atendimento & Equipe",
             items: [
-              { title: "Uniformes completos e higienizados", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Escala de trabalho preenchida e afixada", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Postura e atendimento ao cliente", type: "boolean", requirePhoto: false, photoMode: "none" }
+              { title: "Uniformes completos e higienizados", type: "boolean", requirePhoto: true, photoMode: "nc", geraPlanoAcao: true },
+              { title: "Escala de trabalho preenchida e afixada", type: "boolean", requirePhoto: true, photoMode: "nc", geraPlanoAcao: true },
+              { title: "Postura e atendimento ao cliente", type: "boolean", requirePhoto: false, photoMode: "none", geraPlanoAcao: true }
             ]
           },
           {
             category: "3. Cozinha & Produção",
             items: [
-              { title: "Organização da chapa e área de montagem", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Validades de insumos e molhos", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Padrão de montagem dos hambúrgueres", type: "boolean", requirePhoto: true, photoMode: "nc" }
+              { title: "Organização da chapa e área de montagem", type: "boolean", requirePhoto: true, photoMode: "nc", geraPlanoAcao: true },
+              { title: "Validades de insumos e molhos", type: "boolean", requirePhoto: true, photoMode: "nc", geraPlanoAcao: true },
+              { title: "Padrão de montagem dos hambúrgueres", type: "boolean", requirePhoto: true, photoMode: "nc", geraPlanoAcao: true }
             ]
           },
           {
             category: "4. Equipamentos & Manutenção",
             items: [
-              { title: "Funcionamento de geladeiras e freezers", type: "maintenance", requirePhoto: true, photoMode: "nc" },
-              { title: "Condições gerais de exaustores e chapas", type: "maintenance", requirePhoto: false, photoMode: "none" }
+              { title: "Funcionamento de geladeiras e freezers", type: "maintenance", requirePhoto: true, photoMode: "nc", geraPlanoAcao: true },
+              { title: "Condições gerais de exaustores e chapas", type: "maintenance", requirePhoto: false, photoMode: "none", geraPlanoAcao: true }
             ]
           }
         ]
@@ -2087,13 +2101,9 @@
           const key = `${sIdx}-${iIdx}`;
           const ans = customAnswers[key];
 
+          // 100% das perguntas respondidas (Sim / Não / N/A)
           if (ans === undefined || ans === null || ans === '') {
             unanswered.push(item.title);
-          } else if (ans === 'nao-conforme') {
-            const plan = actionPlans[key];
-            if (!plan || !plan.action || !plan.date) {
-              unanswered.push(`${item.title} (Plano de ação incompleto)`);
-            }
           } else if (ans === 'abrir') {
             const om = maintenanceOrders[key];
             if (!om || !om.equipment || !om.action || !om.date) {
@@ -2109,7 +2119,7 @@
       // 1. Validação de preenchimento obrigatório de 100% das perguntas
       const unanswered = validateUnansweredQuestions();
       if (unanswered.length > 0) {
-        alert(`Impossível finalizar! As seguintes perguntas precisam ser preenchidas:\n\n- ${unanswered.join('\n- ')}`);
+        alert(`Impossível finalizar! As seguintes perguntas precisam ser respondidas:\n\n- ${unanswered.join('\n- ')}`);
         return;
       }
 
@@ -3748,6 +3758,7 @@
 
         sec.items.forEach((item, iIdx) => {
           let typeLabel = item.type === 'maintenance' ? 'Manutenção' : item.type === 'stars' ? 'Estrelas' : item.type === 'text' ? 'Texto' : 'Sim/Não';
+          let geraPlanoText = item.geraPlanoAcao !== false ? 'Sim' : 'Não';
           const itemEl = document.createElement("div");
           itemEl.className = "bg-stone-50 p-2.5 rounded border flex justify-between items-center gap-2 drag-handle";
           itemEl.setAttribute("draggable", "true");
@@ -3784,7 +3795,7 @@
               <span class="text-stone-400 font-bold">☰</span>
               <div class="space-y-0.5">
                 <span class="font-bold text-stone-900 block">${item.title}</span>
-                <span class="text-[10px] text-stone-500 font-medium">[Tipo: ${typeLabel}] • [Foto: ${getItemPhotoModeText(item)}]</span>
+                <span class="text-[10px] text-stone-500 font-medium">[Tipo: ${typeLabel}] • [Foto: ${getItemPhotoModeText(item)}] • [Plano de Ação: ${geraPlanoText}]</span>
               </div>
             </div>
             <div class="flex gap-2 shrink-0">
@@ -3808,6 +3819,7 @@
       
       const currentMode = item.photoMode || (item.requirePhoto ? 'nc' : 'none');
       document.getElementById("edit-q-photo-mode").value = currentMode;
+      document.getElementById("edit-q-gera-plano").value = item.geraPlanoAcao !== false ? "true" : "false";
       document.getElementById("edit-question-modal").classList.remove("hidden");
     }
 
@@ -3821,6 +3833,7 @@
       const title = document.getElementById("edit-q-title").value.trim();
       const type = document.getElementById("edit-q-type").value;
       const photoMode = document.getElementById("edit-q-photo-mode").value;
+      const geraPlanoAcao = document.getElementById("edit-q-gera-plano").value === "true";
 
       if (!title) return alert("O título não pode ser vazio.");
 
@@ -3829,6 +3842,7 @@
       item.type = type;
       item.photoMode = photoMode;
       item.requirePhoto = (photoMode !== 'none');
+      item.geraPlanoAcao = geraPlanoAcao;
 
       localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
       syncConfigToCloud();
@@ -4051,6 +4065,7 @@
       const catIdx = document.getElementById("new-item-category").value;
       const itemText = document.getElementById("new-item-text").value.trim();
       const photoMode = document.getElementById("new-item-photo-mode").value;
+      const geraPlanoAcao = document.getElementById("new-item-gera-plano").value === "true";
 
       if (!itemText) return alert("Digite o título da pergunta.");
 
@@ -4058,7 +4073,8 @@
         title: itemText, 
         type: document.getElementById("new-item-type").value, 
         photoMode: photoMode,
-        requirePhoto: (photoMode !== 'none')
+        requirePhoto: (photoMode !== 'none'),
+        geraPlanoAcao: geraPlanoAcao
       });
 
       localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
@@ -4118,11 +4134,11 @@
       openModulesScreen();
     }
 
-    function handleEvaluationChange(itemKey, value) {
+    function handleEvaluationChange(itemKey, value, geraPlano = true) {
       if (isAuditFinished) return;
       customAnswers[itemKey] = value;
       const planBox = document.getElementById(`plan-box-${itemKey}`);
-      if (value === "nao-conforme") planBox?.classList.remove("hidden");
+      if (value === "nao-conforme" && geraPlano) planBox?.classList.remove("hidden");
       else planBox?.classList.add("hidden");
       calculateScore();
       saveDraft();
@@ -4216,6 +4232,7 @@
         let itemsHtml = sec.items.map((item, iIdx) => {
           const itemKey = `${sIdx}-${iIdx}`;
           const itemType = item.type || "boolean";
+          const geraPlano = item.geraPlanoAcao !== false;
           const photosArr = getPhotosArray(itemKey);
           const planData = actionPlans[itemKey] || { action: '', date: '' };
           const omData = maintenanceOrders[itemKey] || { equipment: '', action: '', date: '' };
@@ -4226,16 +4243,16 @@
             let isConf = savedAnswer === 'conforme' ? 'checked' : '';
             let isNaoConf = savedAnswer === 'nao-conforme' ? 'checked' : '';
             let isNa = savedAnswer === 'na' ? 'checked' : '';
-            let planHidden = savedAnswer === 'nao-conforme' ? '' : 'hidden';
+            let planHidden = (savedAnswer === 'nao-conforme' && geraPlano) ? '' : 'hidden';
 
             controlHtml = `
               <div class="flex gap-2 text-xs">
-                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="conforme" ${isConf} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'conforme')"><div class="text-center py-2 rounded-md border peer-checked:bg-emerald-600 peer-checked:text-white font-bold">Sim</div></label>
-                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="nao-conforme" ${isNaoConf} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'nao-conforme')"><div class="text-center py-2 rounded-md border peer-checked:bg-rose-700 peer-checked:text-white font-bold">Não</div></label>
-                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="na" ${isNa} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'na')"><div class="text-center py-2 rounded-md border peer-checked:bg-stone-500 peer-checked:text-white font-bold">N/A</div></label>
+                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="conforme" ${isConf} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'conforme', ${geraPlano})"><div class="text-center py-2 rounded-md border peer-checked:bg-emerald-600 peer-checked:text-white font-bold">Sim</div></label>
+                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="nao-conforme" ${isNaoConf} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'nao-conforme', ${geraPlano})"><div class="text-center py-2 rounded-md border peer-checked:bg-rose-700 peer-checked:text-white font-bold">Não</div></label>
+                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="na" ${isNa} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'na', ${geraPlano})"><div class="text-center py-2 rounded-md border peer-checked:bg-stone-500 peer-checked:text-white font-bold">N/A</div></label>
               </div>
               <div id="plan-box-${itemKey}" class="${planHidden} p-3 bg-rose-50 border rounded-lg space-y-2 text-xs">
-                <span class="block font-bold text-rose-800 uppercase text-[10px]">⚠️ Plano de Ação</span>
+                <span class="block font-bold text-rose-800 uppercase text-[10px]">⚠️ Plano de Ação (Opcional)</span>
                 <input type="text" value="${planData.action}" placeholder="Ação..." oninput="updateActionPlan('${itemKey}', 'action', this.value)" class="w-full border p-2 bg-white rounded">
                 <input type="date" value="${planData.date}" oninput="updateActionPlan('${itemKey}', 'date', this.value)" class="w-full border p-2 bg-white rounded">
               </div>`;
