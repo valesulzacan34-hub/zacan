@@ -178,14 +178,17 @@
 
         <!-- PAINEL DE PROGRAMAÇÃO DIÁRIA DE CHECKLISTS -->
         <div id="daily-schedule-card" class="bg-white p-5 rounded-xl shadow-sm border border-stone-200 space-y-3">
-          <div class="flex justify-between items-center border-b pb-2">
+          <div class="flex justify-between items-center border-b pb-2 flex-wrap gap-2">
             <div>
               <h2 class="font-bold text-cb-bordo text-xs uppercase tracking-wider flex items-center gap-1.5">
                 📅 Programação Diária de Execução
               </h2>
-              <p class="text-[11px] text-stone-500">Checklists com rotina agendada para hoje</p>
+              <p class="text-[11px] text-stone-500">Checklists com rotina agendada</p>
             </div>
-            <span id="schedule-today-date" class="text-[11px] bg-stone-100 text-stone-700 font-bold px-2 py-1 rounded-lg">--/--/----</span>
+            <div class="flex items-center gap-2">
+              <label for="schedule-filter-date" class="text-[11px] font-bold text-stone-600">Data:</label>
+              <input type="date" id="schedule-filter-date" onchange="renderDailyScheduledChecklists()" class="text-xs bg-stone-50 border border-stone-300 rounded-lg p-1.5 font-bold text-stone-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
+            </div>
           </div>
 
           <div id="daily-scheduled-list" class="space-y-2 pt-1"></div>
@@ -243,7 +246,7 @@
               <select id="unit-selector" class="w-full border rounded-lg p-2.5 text-sm bg-stone-50 font-semibold text-stone-800" onchange="saveDraft()"></select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-stone-600 mb-1">Supervisor / Responsável</label>
+              <label class="block text-xs font-semibold text-stone-600 mb-1">Responsável</label>
               <input type="text" id="supervisor-name" class="w-full border rounded-lg p-2.5 text-sm bg-stone-50" oninput="saveDraft()">
             </div>
           </div>
@@ -860,12 +863,16 @@
             <input type="text" id="new-item-text" placeholder="Título da Pergunta..." class="text-xs border rounded-lg p-2 bg-white">
           </div>
 
-          <div class="flex items-center justify-between pt-1">
-            <label class="flex items-center gap-1.5 cursor-pointer text-stone-700 text-xs font-medium">
-              <input type="checkbox" id="new-item-req-photo" class="rounded text-cb-bordo focus:ring-0">
-              <span>Exigir Foto (Apenas Não Conforme)</span>
-            </label>
-            <button onclick="addNewItem()" class="px-4 py-2 bg-cb-bordo hover:bg-emerald-900 text-white text-xs font-bold rounded-lg transition shadow-sm">+ Inserir Pergunta</button>
+          <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
+            <div>
+              <label class="block font-bold text-stone-600 text-[11px] mb-1">Exigência de Foto:</label>
+              <select id="new-item-photo-mode" class="text-xs border rounded-lg p-1.5 bg-stone-50 font-semibold text-stone-700">
+                <option value="none">Não Exigir Foto (Opcional)</option>
+                <option value="nc">Exigir Foto (Apenas Não Conforme)</option>
+                <option value="always">Exigir Foto Sempre (Obrigatória)</option>
+              </select>
+            </div>
+            <button onclick="addNewItem()" class="px-4 py-2 bg-cb-bordo hover:bg-emerald-900 text-white text-xs font-bold rounded-lg transition shadow-sm ml-auto">+ Inserir Pergunta</button>
           </div>
         </div>
       </div>
@@ -982,9 +989,13 @@
             <option value="text">Texto Aberto</option>
           </select>
         </div>
-        <div class="flex items-center gap-2 pt-2">
-          <input type="checkbox" id="edit-q-photo" class="rounded text-cb-bordo">
-          <label for="edit-q-photo" class="font-bold text-stone-700">Exigir foto obrigatoriamente quando Não Conforme</label>
+        <div>
+          <label class="block font-bold text-stone-600 mb-1">Exigência de Foto:</label>
+          <select id="edit-q-photo-mode" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+            <option value="none">Não Exigir Foto (Opcional)</option>
+            <option value="nc">Exigir Foto (Apenas Não Conforme)</option>
+            <option value="always">Exigir Foto Sempre (Obrigatória)</option>
+          </select>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t">
           <button onclick="closeEditQuestionModal()" class="px-4 py-2 border rounded font-bold text-stone-600">Cancelar</button>
@@ -1125,32 +1136,32 @@
           {
             category: "1. Fachada & Visual",
             items: [
-              { title: "Fachada da loja, iluminação e sinalização", type: "boolean", requirePhoto: true },
-              { title: "Limpeza da área externa e salão", type: "boolean", requirePhoto: true },
-              { title: "Conservação das mesas e assentos", type: "boolean", requirePhoto: false }
+              { title: "Fachada da loja, iluminação e sinalização", type: "boolean", requirePhoto: true, photoMode: "nc" },
+              { title: "Limpeza da área externa e salão", type: "boolean", requirePhoto: true, photoMode: "nc" },
+              { title: "Conservação das mesas e assentos", type: "boolean", requirePhoto: false, photoMode: "none" }
             ]
           },
           {
             category: "2. Atendimento & Equipe",
             items: [
-              { title: "Uniformes completos e higienizados", type: "boolean", requirePhoto: true },
-              { title: "Escala de trabalho preenchida e afixada", type: "boolean", requirePhoto: true },
-              { title: "Postura e atendimento ao cliente", type: "boolean", requirePhoto: false }
+              { title: "Uniformes completos e higienizados", type: "boolean", requirePhoto: true, photoMode: "nc" },
+              { title: "Escala de trabalho preenchida e afixada", type: "boolean", requirePhoto: true, photoMode: "nc" },
+              { title: "Postura e atendimento ao cliente", type: "boolean", requirePhoto: false, photoMode: "none" }
             ]
           },
           {
             category: "3. Cozinha & Produção",
             items: [
-              { title: "Organização da chapa e área de montagem", type: "boolean", requirePhoto: true },
-              { title: "Validades de insumos e molhos", type: "boolean", requirePhoto: true },
-              { title: "Padrão de montagem dos hambúrgueres", type: "boolean", requirePhoto: true }
+              { title: "Organização da chapa e área de montagem", type: "boolean", requirePhoto: true, photoMode: "nc" },
+              { title: "Validades de insumos e molhos", type: "boolean", requirePhoto: true, photoMode: "nc" },
+              { title: "Padrão de montagem dos hambúrgueres", type: "boolean", requirePhoto: true, photoMode: "nc" }
             ]
           },
           {
             category: "4. Equipamentos & Manutenção",
             items: [
-              { title: "Funcionamento de geladeiras e freezers", type: "maintenance", requirePhoto: true },
-              { title: "Condições gerais de exaustores e chapas", type: "maintenance", requirePhoto: false }
+              { title: "Funcionamento de geladeiras e freezers", type: "maintenance", requirePhoto: true, photoMode: "nc" },
+              { title: "Condições gerais de exaustores e chapas", type: "maintenance", requirePhoto: false, photoMode: "none" }
             ]
           }
         ]
@@ -1212,6 +1223,7 @@
         try { localStorage.setItem("BG_LOCAL_REPORTS", JSON.stringify(savedReports)); } catch(e){}
         updateHistoryBadge();
         renderHistoryList();
+        renderDailyScheduledChecklists();
         renderCentralizedActions();
         listenToAllChats();
       });
@@ -1241,6 +1253,7 @@
     let customAnswers = JSON.parse(localStorage.getItem("BG_DRAFT_ANSWERS")) || {};
     let maintenanceOrders = JSON.parse(localStorage.getItem("BG_DRAFT_MAINT")) || {};
     let draftStartTime = localStorage.getItem("BG_DRAFT_START_TIME") || null;
+    let draftChecklistId = localStorage.getItem("BG_DRAFT_CHECKLIST_ID") || null;
 
     let currentActionsTab = 'pending';
 
@@ -1250,6 +1263,7 @@
         localStorage.setItem("BG_DRAFT_PLANS", JSON.stringify(actionPlans));
         localStorage.setItem("BG_DRAFT_ANSWERS", JSON.stringify(customAnswers));
         localStorage.setItem("BG_DRAFT_MAINT", JSON.stringify(maintenanceOrders));
+        localStorage.setItem("BG_DRAFT_CHECKLIST_ID", activeChecklistId);
         if (!draftStartTime) {
           draftStartTime = new Date().toLocaleString('pt-BR');
           localStorage.setItem("BG_DRAFT_START_TIME", draftStartTime);
@@ -1258,18 +1272,21 @@
         console.warn("Armazenamento local cheio ao salvar rascunho:", e);
       }
       updateDraftsBadge();
+      renderDailyScheduledChecklists();
     }
 
     function clearDraft() {
-      attachedPhotos = {}; actionPlans = {}; customAnswers = {}; maintenanceOrders = {}; draftStartTime = null;
+      attachedPhotos = {}; actionPlans = {}; customAnswers = {}; maintenanceOrders = {}; draftStartTime = null; draftChecklistId = null;
       isAuditFinished = false;
       localStorage.removeItem("BG_DRAFT_PHOTOS");
       localStorage.removeItem("BG_DRAFT_PLANS");
       localStorage.removeItem("BG_DRAFT_ANSWERS");
       localStorage.removeItem("BG_DRAFT_MAINT");
       localStorage.removeItem("BG_DRAFT_START_TIME");
+      localStorage.removeItem("BG_DRAFT_CHECKLIST_ID");
       updateDraftsBadge();
       updateFooterFinishUI();
+      renderDailyScheduledChecklists();
     }
 
     function hasActiveDraft() {
@@ -1311,6 +1328,7 @@
     }
 
     function resumeDraft() {
+      if (draftChecklistId) activeChecklistId = draftChecklistId;
       document.getElementById("active-model-title-badge").innerText = getCurrentChecklist().name;
       renderChecklist();
       switchChecklistTab('audit');
@@ -1360,6 +1378,7 @@
       document.getElementById("undo-toast").classList.add("hidden");
       lastDeletedItem = null;
       renderHistoryList();
+      renderDailyScheduledChecklists();
       alert("Ação desfeita com sucesso!");
     }
 
@@ -1681,18 +1700,24 @@
       }
     }
 
+    // --- PAINEL DE PROGRAMAÇÃO DIÁRIA COM FILTRO DE DATAS E SLA DE ATRASO ---
     function renderDailyScheduledChecklists() {
       const container = document.getElementById("daily-scheduled-list");
-      const dateBadge = document.getElementById("schedule-today-date");
+      const dateInput = document.getElementById("schedule-filter-date");
       if (!container) return;
+
+      const now = new Date();
+      if (dateInput && !dateInput.value) {
+        dateInput.value = now.toISOString().split('T')[0];
+      }
+
+      const selectedDateStr = dateInput ? dateInput.value : now.toISOString().split('T')[0];
+      const selectedDate = new Date(selectedDateStr + 'T00:00:00');
+
+      const dayOfWeek = selectedDate.getDay();
+      const dayOfMonth = selectedDate.getDate();
+
       container.innerHTML = "";
-
-      const today = new Date();
-      if (dateBadge) dateBadge.innerText = today.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
-
-      const dayOfWeek = today.getDay(); // 0 Dom, 1 Seg, ..., 6 Sáb
-      const dayOfMonth = today.getDate();
-      const todayIso = today.toISOString().split('T')[0];
 
       let scheduledTemplates = allChecklists.filter(c => {
         if (!c.recurrence || !c.recurrence.active) return false;
@@ -1706,27 +1731,76 @@
           return dayOfWeek === targetDay;
         }
         if (freq === 'monthly' && dayOfMonth === 1) return true;
-        if (freq === 'specific_date' && c.recurrence.specificDate === todayIso) return true;
+        if (freq === 'specific_date' && c.recurrence.specificDate === selectedDateStr) return true;
         return false;
       });
 
+      // Filtrar checklists já concluídos na data selecionada
+      scheduledTemplates = scheduledTemplates.filter(c => {
+        return !savedReports.some(r => {
+          if (!r.date) return false;
+          let datePart = r.date.split(',')[0].trim();
+          let parts = datePart.split('/');
+          if (parts.length === 3) {
+            let repIso = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            return repIso === selectedDateStr && (r.checklistId === c.id || r.name === c.name);
+          }
+          return false;
+        });
+      });
+
       if (scheduledTemplates.length === 0) {
-        container.innerHTML = `<p class="text-xs text-stone-400 italic py-2 text-center">Nenhum checklist programado para hoje.</p>`;
+        container.innerHTML = `<p class="text-xs text-stone-400 italic py-2 text-center">Nenhum checklist pendente ou agendado para esta data.</p>`;
         return;
       }
 
       scheduledTemplates.forEach(c => {
         const timeStr = c.recurrence.time || "08:00";
+        let isOverdue = false;
+        let delayText = "";
+
+        const scheduledDateTime = new Date(`${selectedDateStr}T${timeStr}:00`);
+
+        if (now > scheduledDateTime) {
+          isOverdue = true;
+          const diffMs = now - scheduledDateTime;
+          const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+          const diffDays = Math.floor(diffHours / 24);
+
+          if (diffDays >= 1) {
+            delayText = `⚠️ ${diffDays} dia(s) de atraso`;
+          } else {
+            const remMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            delayText = `⚠️ Atrasado há ${diffHours}h ${remMins}min`;
+          }
+        }
+
+        const isCurrentDraftActive = hasActiveDraft() && (draftChecklistId === c.id || (!draftChecklistId && activeChecklistId === c.id));
+
         const div = document.createElement("div");
-        div.className = "p-3 bg-stone-50 border rounded-xl flex justify-between items-center text-xs";
+        div.className = `p-3.5 rounded-xl border flex justify-between items-center text-xs flex-wrap gap-2 transition ${isOverdue ? 'bg-rose-50/50 border-rose-200' : 'bg-stone-50 border-stone-200'}`;
         div.innerHTML = `
           <div>
-            <span class="font-bold text-cb-bordo text-sm block">${c.name}</span>
-            <span class="text-stone-500 font-semibold block">⏰ Horário Previsto: ${timeStr}</span>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-cb-bordo text-sm block">${c.name}</span>
+              ${isCurrentDraftActive ? '<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-300">📝 Em Andamento</span>' : ''}
+            </div>
+            <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+              <span class="text-stone-500 font-semibold">⏰ Horário Previsto: ${timeStr}</span>
+              ${isOverdue ? `<span class="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded text-[10px]">${delayText}</span>` : ''}
+            </div>
           </div>
-          <button onclick="startScheduledChecklistDirect('${c.id}')" class="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg shadow-sm transition">
-            Iniciar Agora
-          </button>
+          <div>
+            ${isCurrentDraftActive ? `
+              <button onclick="resumeDraft()" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-sm transition uppercase tracking-wider text-[11px]">
+                Continuar Checklist
+              </button>
+            ` : `
+              <button onclick="startScheduledChecklistDirect('${c.id}')" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg shadow-sm transition uppercase tracking-wider text-[11px]">
+                Iniciar Agora
+              </button>
+            `}
+          </div>
         `;
         container.appendChild(div);
       });
@@ -1859,7 +1933,7 @@
             </div>
           </div>
           <div id="history-details-${idx}" class="hidden p-4 border-t space-y-3 bg-white">
-            <div><strong>Supervisor:</strong> ${rep.supervisor}</div>
+            <div><strong>Responsável:</strong> ${rep.supervisor}</div>
             <div><strong>Não Conformidades:</strong><br>${ncListHtml || 'Nenhuma'}</div>
             ${omListHtml ? `<div><strong>Ordens de Manutenção:</strong><br>${omListHtml}</div>` : ''}
             <div class="pt-2 border-t flex justify-end gap-2">
@@ -1895,6 +1969,7 @@
 
         syncConfigToCloud();
         renderHistoryList();
+        renderDailyScheduledChecklists();
         updateNotificationBadgeCount();
         triggerUndoToast("Relatório", "report", itemToDelete);
       }
@@ -1924,7 +1999,7 @@
         div.innerHTML = `
           <div>
             <span class="font-bold text-cb-bordo block">${rep.unit} — ${rep.date}</span>
-            <span class="text-stone-500">Supervisor: ${rep.supervisor} | Nota: ${rep.score}%</span>
+            <span class="text-stone-500">Responsável: ${rep.supervisor} | Nota: ${rep.score}%</span>
           </div>
           <div class="flex gap-2">
             <button onclick="restoreReportFromTrash(${idx})" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded shadow-sm">Restaurar</button>
@@ -1947,6 +2022,7 @@
         syncConfigToCloud();
         renderHistoryList();
         renderReportsTrashList();
+        renderDailyScheduledChecklists();
         alert("Relatório restaurado com sucesso!");
       }
     }
@@ -1984,7 +2060,7 @@
     function finishChecklistEvaluation() {
       const missingPhotos = validatePhotos();
       if (missingPhotos.length > 0) {
-        alert(`Atenção: As seguintes perguntas exigem foto obrigatória para itens Não Conformes:\n\n- ${missingPhotos.join('\n- ')}`);
+        alert(`Atenção: As seguintes perguntas exigem envio de foto obrigatória:\n\n- ${missingPhotos.join('\n- ')}`);
         return;
       }
 
@@ -2115,7 +2191,7 @@
               <h1 style="color: #1B5E20; font-size: 18px; margin: 0 0 6px 0; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px;">ZACAN HOLDING - ${currentChk.name.toUpperCase()}</h1>
               <div style="font-size: 11px; color: #555; line-height: 1.5;">
                 <strong>Data da Auditoria:</strong> ${dateStr}<br>
-                <strong>Unidade:</strong> ${unit} &nbsp;|&nbsp; <strong>Supervisor:</strong> ${supervisor}<br>
+                <strong>Unidade:</strong> ${unit} &nbsp;|&nbsp; <strong>Responsável:</strong> ${supervisor}<br>
                 <strong>Avaliados:</strong> ${total} itens
               </div>
             </div>
@@ -2197,6 +2273,8 @@
 
       let newRep = {
         id: "rep_" + Date.now(),
+        checklistId: currentChk.id,
+        name: currentChk.name,
         unit,
         supervisor,
         date: dateStr,
@@ -2273,11 +2351,13 @@
       updateHistoryBadge();
       updateNotificationBadgeCount();
       renderHistoryList();
+      renderDailyScheduledChecklists();
 
       if (isFirebaseReady) {
         reportData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
         db.collection("reports").doc(reportData.id).set(reportData).then(() => {
           renderHistoryList();
+          renderDailyScheduledChecklists();
         }).catch(err => console.error("Erro ao salvar relatório no Firestore:", err));
       }
     }
@@ -3580,6 +3660,13 @@
     let draggedSecIdx = null;
     let draggedItemIdx = null;
 
+    function getItemPhotoModeText(item) {
+      const mode = item.photoMode || (item.requirePhoto ? 'nc' : 'none');
+      if (mode === 'always') return 'Sempre Obrigatória';
+      if (mode === 'nc') return 'Apenas Não Conforme';
+      return 'Opcional';
+    }
+
     function renderModalItems() {
       const container = document.getElementById("modal-item-list");
       const catSelect = document.getElementById("new-item-category");
@@ -3633,7 +3720,7 @@
               <span class="text-stone-400 font-bold">☰</span>
               <div class="space-y-0.5">
                 <span class="font-bold text-stone-900 block">${item.title}</span>
-                <span class="text-[10px] text-stone-500 font-medium">[Tipo: ${typeLabel}] • [Foto NC: ${item.requirePhoto ? 'Sim' : 'Não'}]</span>
+                <span class="text-[10px] text-stone-500 font-medium">[Tipo: ${typeLabel}] • [Foto: ${getItemPhotoModeText(item)}]</span>
               </div>
             </div>
             <div class="flex gap-2 shrink-0">
@@ -3654,7 +3741,9 @@
       document.getElementById("edit-q-item-idx").value = iIdx;
       document.getElementById("edit-q-title").value = item.title;
       document.getElementById("edit-q-type").value = item.type || 'boolean';
-      document.getElementById("edit-q-photo").checked = !!item.requirePhoto;
+      
+      const currentMode = item.photoMode || (item.requirePhoto ? 'nc' : 'none');
+      document.getElementById("edit-q-photo-mode").value = currentMode;
       document.getElementById("edit-question-modal").classList.remove("hidden");
     }
 
@@ -3667,14 +3756,15 @@
       const iIdx = parseInt(document.getElementById("edit-q-item-idx").value);
       const title = document.getElementById("edit-q-title").value.trim();
       const type = document.getElementById("edit-q-type").value;
-      const requirePhoto = document.getElementById("edit-q-photo").checked;
+      const photoMode = document.getElementById("edit-q-photo-mode").value;
 
       if (!title) return alert("O título não pode ser vazio.");
 
       let item = getCurrentChecklist().categories[sIdx].items[iIdx];
       item.title = title;
       item.type = type;
-      item.requirePhoto = requirePhoto;
+      item.photoMode = photoMode;
+      item.requirePhoto = (photoMode !== 'none');
 
       localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
       syncConfigToCloud();
@@ -3894,8 +3984,17 @@
     function addNewItem() {
       const catIdx = document.getElementById("new-item-category").value;
       const itemText = document.getElementById("new-item-text").value.trim();
+      const photoMode = document.getElementById("new-item-photo-mode").value;
+
       if (!itemText) return alert("Digite o título da pergunta.");
-      getCurrentChecklist().categories[catIdx].items.push({ title: itemText, type: document.getElementById("new-item-type").value, requirePhoto: document.getElementById("new-item-req-photo").checked });
+
+      getCurrentChecklist().categories[catIdx].items.push({ 
+        title: itemText, 
+        type: document.getElementById("new-item-type").value, 
+        photoMode: photoMode,
+        requirePhoto: (photoMode !== 'none')
+      });
+
       localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
       syncConfigToCloud(); document.getElementById("new-item-text").value = ""; renderModalItems();
     }
@@ -4108,9 +4207,17 @@
             </div>
           `).join('');
 
+          const pMode = item.photoMode || (item.requirePhoto ? 'nc' : 'none');
+          let photoTagHtml = '';
+          if (pMode === 'always') {
+            photoTagHtml = '<span class="text-[10px] bg-rose-50 text-rose-800 border border-rose-200 px-1.5 py-0.5 rounded font-bold">Foto Obrigatória</span>';
+          } else if (pMode === 'nc') {
+            photoTagHtml = '<span class="text-[10px] bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded font-bold">Foto Obrigatória (se NC)</span>';
+          }
+
           return `
           <div class="p-3.5 border-t flex flex-col gap-2.5">
-            <div class="flex justify-between items-start gap-2"><span class="text-sm font-medium">${item.title}</span>${item.requirePhoto ? '<span class="text-[10px] bg-amber-50 text-amber-800 border px-1.5 rounded font-bold">Foto Obrigatória (se NC)</span>' : ''}</div>
+            <div class="flex justify-between items-start gap-2"><span class="text-sm font-medium">${item.title}</span>${photoTagHtml}</div>
             ${controlHtml}
             
             <div class="space-y-1.5 pt-1">
@@ -4165,7 +4272,7 @@
       }
     }
 
-    // FOTO OBRIGATÓRIA CONDICIONAL APENAS SE FOR NÃO CONFORME / ABRIR OM
+    // VALIDAÇÃO FLEXÍVEL DE FOTO (CONDICIONAL NC OU OBRIGATÓRIA SEMPRE)
     function validatePhotos() {
       let missing = [];
       const current = getCurrentChecklist();
@@ -4173,11 +4280,14 @@
         sec.items.forEach((item, iIdx) => {
           const key = `${sIdx}-${iIdx}`;
           const photos = getPhotosArray(key);
+          const pMode = item.photoMode || (item.requirePhoto ? 'nc' : 'none');
           const isNc = customAnswers[key] === 'nao-conforme';
           const isOm = customAnswers[key] === 'abrir';
 
-          if (item.requirePhoto && (isNc || isOm) && photos.length === 0) {
-            missing.push(item.title);
+          if (pMode === 'always' && photos.length === 0) {
+            missing.push(`${item.title} (Foto sempre obrigatória)`);
+          } else if (pMode === 'nc' && (isNc || isOm) && photos.length === 0) {
+            missing.push(`${item.title} (Foto obrigatória quando Não Conforme)`);
           }
         });
       });
