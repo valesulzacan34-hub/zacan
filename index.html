@@ -870,15 +870,25 @@
             <input type="text" id="new-item-text" placeholder="Título da Pergunta..." class="text-xs border rounded-lg p-2 bg-white">
           </div>
 
-          <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
             <div>
               <label class="block font-bold text-stone-600 text-[11px] mb-1">Exigência de Foto:</label>
-              <select id="new-item-photo-mode" class="text-xs border rounded-lg p-1.5 bg-stone-50 font-semibold text-stone-700">
+              <select id="new-item-photo-mode" class="w-full text-xs border rounded-lg p-1.5 bg-stone-50 font-semibold text-stone-700">
                 <option value="none">Não Exigir Foto (Opcional)</option>
                 <option value="nc">Exigir Foto (Apenas Não Conforme)</option>
                 <option value="always">Exigir Foto Sempre (Obrigatória)</option>
               </select>
             </div>
+            <div>
+              <label class="block font-bold text-stone-600 text-[11px] mb-1">Gera Plano de Ação?</label>
+              <select id="new-item-action-plan" class="w-full text-xs border rounded-lg p-1.5 bg-stone-50 font-semibold text-stone-700">
+                <option value="true">Sim (Exibir caixa de Plano de Ação se NC)</option>
+                <option value="false">Não (Apenas marcar resposta)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-2">
             <button onclick="addNewItem()" class="px-4 py-2 bg-cb-bordo hover:bg-emerald-900 text-white text-xs font-bold rounded-lg transition shadow-sm ml-auto">+ Inserir Pergunta</button>
           </div>
         </div>
@@ -1010,6 +1020,13 @@
             <option value="none">Não Exigir Foto (Opcional)</option>
             <option value="nc">Exigir Foto (Apenas Não Conforme)</option>
             <option value="always">Exigir Foto Sempre (Obrigatória)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-stone-600 mb-1">Gera Plano de Ação?</label>
+          <select id="edit-q-action-plan" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+            <option value="true">Sim (Exibir caixa de Plano de Ação se NC)</option>
+            <option value="false">Não (Apenas marcar resposta)</option>
           </select>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t">
@@ -1152,32 +1169,32 @@
           {
             category: "1. Fachada & Visual",
             items: [
-              { title: "Fachada da loja, iluminação e sinalização", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Limpeza da área externa e salão", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Conservação das mesas e assentos", type: "boolean", requirePhoto: false, photoMode: "none" }
+              { title: "Fachada da loja, iluminação e sinalização", type: "boolean", requirePhoto: true, photoMode: "nc", generateActionPlan: true },
+              { title: "Limpeza da área externa e salão", type: "boolean", requirePhoto: true, photoMode: "nc", generateActionPlan: true },
+              { title: "Conservação das mesas e assentos", type: "boolean", requirePhoto: false, photoMode: "none", generateActionPlan: true }
             ]
           },
           {
             category: "2. Atendimento & Equipe",
             items: [
-              { title: "Uniformes completos e higienizados", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Escala de trabalho preenchida e afixada", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Postura e atendimento ao cliente", type: "boolean", requirePhoto: false, photoMode: "none" }
+              { title: "Uniformes completos e higienizados", type: "boolean", requirePhoto: true, photoMode: "nc", generateActionPlan: true },
+              { title: "Escala de trabalho preenchida e afixada", type: "boolean", requirePhoto: true, photoMode: "nc", generateActionPlan: true },
+              { title: "Postura e atendimento ao cliente", type: "boolean", requirePhoto: false, photoMode: "none", generateActionPlan: true }
             ]
           },
           {
             category: "3. Cozinha & Produção",
             items: [
-              { title: "Organização da chapa e área de montagem", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Validades de insumos e molhos", type: "boolean", requirePhoto: true, photoMode: "nc" },
-              { title: "Padrão de montagem dos hambúrgueres", type: "boolean", requirePhoto: true, photoMode: "nc" }
+              { title: "Organização da chapa e área de montagem", type: "boolean", requirePhoto: true, photoMode: "nc", generateActionPlan: true },
+              { title: "Validades de insumos e molhos", type: "boolean", requirePhoto: true, photoMode: "nc", generateActionPlan: true },
+              { title: "Padrão de montagem dos hambúrgueres", type: "boolean", requirePhoto: true, photoMode: "nc", generateActionPlan: true }
             ]
           },
           {
             category: "4. Equipamentos & Manutenção",
             items: [
-              { title: "Funcionamento de geladeiras e freezers", type: "maintenance", requirePhoto: true, photoMode: "nc" },
-              { title: "Condições gerais de exaustores e chapas", type: "maintenance", requirePhoto: false, photoMode: "none" }
+              { title: "Funcionamento de geladeiras e freezers", type: "maintenance", requirePhoto: true, photoMode: "nc", generateActionPlan: true },
+              { title: "Condições gerais de exaustores e chapas", type: "maintenance", requirePhoto: false, photoMode: "none", generateActionPlan: true }
             ]
           }
         ]
@@ -1939,7 +1956,7 @@
         const itemCard = document.createElement("div");
         itemCard.className = "bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden text-xs";
 
-        let ncListHtml = rep.nonConformities?.map(nc => `<div class="p-2 bg-rose-50 border border-rose-200 rounded text-xs mb-1"><strong>❌ ${nc.title}</strong><br>Ação: ${nc.action} (Prazo: ${nc.date})</div>`).join("") || "";
+        let ncListHtml = rep.nonConformities?.map(nc => `<div class="p-2 bg-rose-50 border border-rose-200 rounded text-xs mb-1"><strong>❌ ${nc.title}</strong><br>Ação: ${nc.action || 'Não descrita'} ${nc.date ? '(Prazo: ' + nc.date + ')' : ''}</div>`).join("") || "";
         let omListHtml = rep.maintenanceOrders?.map(om => `<div class="p-2 bg-amber-50 border border-amber-300 rounded text-xs mb-1"><strong>🔧 ${om.equipment}</strong><br>Defeito: ${om.action} (Prazo: ${om.date})</div>`).join("") || "";
 
         itemCard.innerHTML = `
@@ -2078,7 +2095,7 @@
       }
     }
 
-    // --- VALIDAÇÃO DE PREENCHIMENTO TOTAL E NOVO FLUXO DE ENCERRAMENTO SEM ABRIR PDF DIRETO ---
+    // --- VALIDAÇÃO DE PREENCHIMENTO DE PERGUNTAS (PLANO DE AÇÃO NÃO É MAIS OBRIGATÓRIO) ---
     function validateUnansweredQuestions() {
       let unanswered = [];
       const current = getCurrentChecklist();
@@ -2087,13 +2104,9 @@
           const key = `${sIdx}-${iIdx}`;
           const ans = customAnswers[key];
 
+          // Verifica apenas se a pergunta em si foi respondida
           if (ans === undefined || ans === null || ans === '') {
             unanswered.push(item.title);
-          } else if (ans === 'nao-conforme') {
-            const plan = actionPlans[key];
-            if (!plan || !plan.action || !plan.date) {
-              unanswered.push(`${item.title} (Plano de ação incompleto)`);
-            }
           } else if (ans === 'abrir') {
             const om = maintenanceOrders[key];
             if (!om || !om.equipment || !om.action || !om.date) {
@@ -2106,17 +2119,23 @@
     }
 
     function finishChecklistEvaluation() {
-      // 1. Validação de preenchimento obrigatório de 100% das perguntas
+      // 1. Validação de preenchimento obrigatório de 100% das perguntas (resposta dada)
       const unanswered = validateUnansweredQuestions();
       if (unanswered.length > 0) {
-        alert(`Impossível finalizar! As seguintes perguntas precisam ser preenchidas:\n\n- ${unanswered.join('\n- ')}`);
+        alert(`Impossível finalizar! As seguintes perguntas precisam ser preenchidas:
+
+- ${unanswered.join('
+- ')}`);
         return;
       }
 
       // 2. Validação de fotos obrigatórias
       const missingPhotos = validatePhotos();
       if (missingPhotos.length > 0) {
-        alert(`Atenção: As seguintes perguntas exigem envio de foto obrigatória:\n\n- ${missingPhotos.join('\n- ')}`);
+        alert(`Atenção: As seguintes perguntas exigem envio de foto obrigatória:
+
+- ${missingPhotos.join('
+- ')}`);
         return;
       }
 
@@ -2192,13 +2211,15 @@
             </tr>
           `;
 
+          // Adiciona a lista de não conformidades (se houver plano preenchido ou se a opção de plano de ação estiver ativa)
           if (ans === 'nao-conforme') {
             const plan = actionPlans[key] || {};
+            // Registra no quadro se houver descrição de plano ou de forma geral
             ncList.push({
               title: item.title,
               sector: sec.category,
-              action: plan.action || 'Não descrita',
-              date: plan.date ? plan.date.split('-').reverse().join('/') : 'Não definida'
+              action: plan.action || 'Não conformidade registrada sem plano de ação',
+              date: plan.date ? plan.date.split('-').reverse().join('/') : 'A definir'
             });
           }
           if (ans === 'abrir') {
@@ -3081,7 +3102,7 @@
         rep.nonConformities?.forEach((nc, i) => {
           let dueDate = nc.date || '';
           let matchDate = true;
-          if (dueDate && dueDate !== 'Não definida') {
+          if (dueDate && dueDate !== 'Não definida' && dueDate !== 'A definir') {
             let parts = dueDate.split('/');
             let iso = `${parts[2]}-${parts[1]}-${parts[0]}`;
             if (startFilter && iso < startFilter) matchDate = false;
@@ -3094,7 +3115,7 @@
           if (matchDate && storeMatch) {
             allActions.push({ 
               unit: rep.unit, title: nc.title, action: nc.action || 'Não descrita', 
-              date: dueDate || 'Indefinida', rawDate: dueDate, chatId: actId, 
+              date: dueDate || 'A definir', rawDate: dueDate, chatId: actId, 
               status: statusObj, priority: priorityObj, fullReportId: rep.id, type: 'nc', index: i, isManual: false
             });
           }
@@ -3103,7 +3124,7 @@
         rep.maintenanceOrders?.forEach((om, i) => {
           let dueDate = om.date || '';
           let matchDate = true;
-          if (dueDate && dueDate !== 'Não definida') {
+          if (dueDate && dueDate !== 'Não definida' && dueDate !== 'A definir') {
             let parts = dueDate.split('/');
             let iso = `${parts[2]}-${parts[1]}-${parts[0]}`;
             if (startFilter && iso < startFilter) matchDate = false;
@@ -3116,7 +3137,7 @@
           if (matchDate && storeMatch) {
             allActions.push({ 
               unit: rep.unit, title: `Manutenção: ${om.equipment}`, action: om.action || 'Não descrito', 
-              date: dueDate || 'Indefinida', rawDate: dueDate, chatId: actId, 
+              date: dueDate || 'A definir', rawDate: dueDate, chatId: actId, 
               status: statusObj, priority: priorityObj, fullReportId: rep.id, type: 'om', index: i, isManual: false
             });
           }
@@ -3208,7 +3229,7 @@
 
       filteredActions.sort((a, b) => {
         let parseDate = (d) => {
-          if (!d || d === 'Indefinida' || d === 'Não definida') return new Date('2099-12-31');
+          if (!d || d === 'Indefinida' || d === 'Não definida' || d === 'A definir') return new Date('2099-12-31');
           if (d.includes('-')) return new Date(d);
           if (d.includes('/')) return new Date(d.split('/').reverse().join('-'));
           return new Date('2099-12-31');
@@ -3224,7 +3245,7 @@
       filteredActions.forEach(act => {
         let atrasoHtml = "";
         let isDone = act.status.toLowerCase().includes('concluído');
-        if (!isDone && act.rawDate && act.rawDate !== 'Indefinida' && act.rawDate !== 'Não definida') {
+        if (!isDone && act.rawDate && act.rawDate !== 'Indefinida' && act.rawDate !== 'Não definida' && act.rawDate !== 'A definir') {
           let parts = act.rawDate.includes('-') ? act.rawDate.split('-') : act.rawDate.split('/').reverse();
           let dueIso = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
           let todayIso = new Date().toISOString().split('T')[0];
@@ -3731,6 +3752,10 @@
       return 'Opcional';
     }
 
+    function getItemActionPlanText(item) {
+      return (item.generateActionPlan !== false) ? 'Gera Plano' : 'Não Gera Plano';
+    }
+
     function renderModalItems() {
       const container = document.getElementById("modal-item-list");
       const catSelect = document.getElementById("new-item-category");
@@ -3784,7 +3809,7 @@
               <span class="text-stone-400 font-bold">☰</span>
               <div class="space-y-0.5">
                 <span class="font-bold text-stone-900 block">${item.title}</span>
-                <span class="text-[10px] text-stone-500 font-medium">[Tipo: ${typeLabel}] • [Foto: ${getItemPhotoModeText(item)}]</span>
+                <span class="text-[10px] text-stone-500 font-medium">[Tipo: ${typeLabel}] • [Foto: ${getItemPhotoModeText(item)}] • [${getItemActionPlanText(item)}]</span>
               </div>
             </div>
             <div class="flex gap-2 shrink-0">
@@ -3808,6 +3833,7 @@
       
       const currentMode = item.photoMode || (item.requirePhoto ? 'nc' : 'none');
       document.getElementById("edit-q-photo-mode").value = currentMode;
+      document.getElementById("edit-q-action-plan").value = (item.generateActionPlan !== false) ? "true" : "false";
       document.getElementById("edit-question-modal").classList.remove("hidden");
     }
 
@@ -3821,6 +3847,7 @@
       const title = document.getElementById("edit-q-title").value.trim();
       const type = document.getElementById("edit-q-type").value;
       const photoMode = document.getElementById("edit-q-photo-mode").value;
+      const genActionPlan = document.getElementById("edit-q-action-plan").value === "true";
 
       if (!title) return alert("O título não pode ser vazio.");
 
@@ -3829,6 +3856,7 @@
       item.type = type;
       item.photoMode = photoMode;
       item.requirePhoto = (photoMode !== 'none');
+      item.generateActionPlan = genActionPlan;
 
       localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
       syncConfigToCloud();
@@ -4051,6 +4079,7 @@
       const catIdx = document.getElementById("new-item-category").value;
       const itemText = document.getElementById("new-item-text").value.trim();
       const photoMode = document.getElementById("new-item-photo-mode").value;
+      const genActionPlan = document.getElementById("new-item-action-plan").value === "true";
 
       if (!itemText) return alert("Digite o título da pergunta.");
 
@@ -4058,7 +4087,8 @@
         title: itemText, 
         type: document.getElementById("new-item-type").value, 
         photoMode: photoMode,
-        requirePhoto: (photoMode !== 'none')
+        requirePhoto: (photoMode !== 'none'),
+        generateActionPlan: genActionPlan
       });
 
       localStorage.setItem("BG_LOCAL_CHECKLISTS", JSON.stringify(allChecklists));
@@ -4118,12 +4148,15 @@
       openModulesScreen();
     }
 
-    function handleEvaluationChange(itemKey, value) {
+    function handleEvaluationChange(itemKey, value, generateActionPlan) {
       if (isAuditFinished) return;
       customAnswers[itemKey] = value;
       const planBox = document.getElementById(`plan-box-${itemKey}`);
-      if (value === "nao-conforme") planBox?.classList.remove("hidden");
-      else planBox?.classList.add("hidden");
+      if (value === "nao-conforme" && generateActionPlan !== false) {
+        planBox?.classList.remove("hidden");
+      } else {
+        planBox?.classList.add("hidden");
+      }
       calculateScore();
       saveDraft();
     }
@@ -4216,6 +4249,7 @@
         let itemsHtml = sec.items.map((item, iIdx) => {
           const itemKey = `${sIdx}-${iIdx}`;
           const itemType = item.type || "boolean";
+          const genPlan = (item.generateActionPlan !== false);
           const photosArr = getPhotosArray(itemKey);
           const planData = actionPlans[itemKey] || { action: '', date: '' };
           const omData = maintenanceOrders[itemKey] || { equipment: '', action: '', date: '' };
@@ -4226,16 +4260,16 @@
             let isConf = savedAnswer === 'conforme' ? 'checked' : '';
             let isNaoConf = savedAnswer === 'nao-conforme' ? 'checked' : '';
             let isNa = savedAnswer === 'na' ? 'checked' : '';
-            let planHidden = savedAnswer === 'nao-conforme' ? '' : 'hidden';
+            let planHidden = (savedAnswer === 'nao-conforme' && genPlan) ? '' : 'hidden';
 
             controlHtml = `
               <div class="flex gap-2 text-xs">
-                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="conforme" ${isConf} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'conforme')"><div class="text-center py-2 rounded-md border peer-checked:bg-emerald-600 peer-checked:text-white font-bold">Sim</div></label>
-                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="nao-conforme" ${isNaoConf} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'nao-conforme')"><div class="text-center py-2 rounded-md border peer-checked:bg-rose-700 peer-checked:text-white font-bold">Não</div></label>
-                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="na" ${isNa} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'na')"><div class="text-center py-2 rounded-md border peer-checked:bg-stone-500 peer-checked:text-white font-bold">N/A</div></label>
+                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="conforme" ${isConf} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'conforme', ${genPlan})"><div class="text-center py-2 rounded-md border peer-checked:bg-emerald-600 peer-checked:text-white font-bold">Sim</div></label>
+                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="nao-conforme" ${isNaoConf} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'nao-conforme', ${genPlan})"><div class="text-center py-2 rounded-md border peer-checked:bg-rose-700 peer-checked:text-white font-bold">Não</div></label>
+                <label class="flex-1 cursor-pointer"><input type="radio" name="item-${itemKey}" value="na" ${isNa} class="hidden peer" onchange="handleEvaluationChange('${itemKey}', 'na', ${genPlan})"><div class="text-center py-2 rounded-md border peer-checked:bg-stone-500 peer-checked:text-white font-bold">N/A</div></label>
               </div>
               <div id="plan-box-${itemKey}" class="${planHidden} p-3 bg-rose-50 border rounded-lg space-y-2 text-xs">
-                <span class="block font-bold text-rose-800 uppercase text-[10px]">⚠️ Plano de Ação</span>
+                <span class="block font-bold text-rose-800 uppercase text-[10px]">⚠️ Plano de Ação (Opcional)</span>
                 <input type="text" value="${planData.action}" placeholder="Ação..." oninput="updateActionPlan('${itemKey}', 'action', this.value)" class="w-full border p-2 bg-white rounded">
                 <input type="date" value="${planData.date}" oninput="updateActionPlan('${itemKey}', 'date', this.value)" class="w-full border p-2 bg-white rounded">
               </div>`;
