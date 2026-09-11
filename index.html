@@ -776,7 +776,11 @@
             <!-- SEÇÃO DE RECORRÊNCIA NA CRIAÇÃO DO MODELO -->
             <div class="border-t pt-3 space-y-2">
               <span class="block text-xs font-bold text-stone-800 uppercase">📅 Agendamento & Recorrência Automática</span>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div>
+                  <label class="block font-bold text-stone-600 mb-1">Começa a partir de (Marco Temporal):</label>
+                  <input type="date" id="new-chk-recur-start-date" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+                </div>
                 <div>
                   <label class="block font-bold text-stone-600 mb-1">Ativar Recorrência?</label>
                   <select id="new-chk-recur-active" class="w-full border rounded p-2 bg-stone-50 font-semibold">
@@ -784,6 +788,9 @@
                     <option value="true">Sim (Automático)</option>
                   </select>
                 </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <div>
                   <label class="block font-bold text-stone-600 mb-1">Frequência:</label>
                   <select id="new-chk-recur-freq" onchange="toggleFrequencyFields('new')" class="w-full border rounded p-2 bg-stone-50 font-semibold">
@@ -911,7 +918,12 @@
 
         <div class="border-t pt-3 space-y-2">
           <span class="block font-bold text-stone-800 uppercase">📅 Agendamento & Recorrência</span>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="block font-bold text-stone-600 mb-1">Começa a partir de (Marco Temporal):</label>
+              <input type="date" id="edit-model-recur-start-date" class="w-full border rounded p-2 bg-stone-50 font-semibold">
+            </div>
             <div>
               <label class="block font-bold text-stone-600 mb-1">Ativo?</label>
               <select id="edit-model-recur-active" class="w-full border rounded p-2 bg-stone-50 font-semibold">
@@ -919,6 +931,9 @@
                 <option value="true">Sim</option>
               </select>
             </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label class="block font-bold text-stone-600 mb-1">Frequência:</label>
               <select id="edit-model-recur-freq" onchange="toggleFrequencyFields('edit')" class="w-full border rounded p-2 bg-stone-50 font-semibold">
@@ -1130,6 +1145,7 @@
           active: true,
           frequency: "daily",
           time: "08:00",
+          startDate: new Date().toISOString().split('T')[0],
           units: []
         },
         categories: [
@@ -1700,7 +1716,7 @@
       }
     }
 
-    // --- PAINEL DE PROGRAMAÇÃO DIÁRIA COM FILTRO DE DATAS E SLA DE ATRASO ---
+    // --- PAINEL DE PROGRAMAÇÃO DIÁRIA COM FILTRO DE DATAS, MARCO TEMPORAL E SLA DE ATRASO ---
     function renderDailyScheduledChecklists() {
       const container = document.getElementById("daily-scheduled-list");
       const dateInput = document.getElementById("schedule-filter-date");
@@ -1722,6 +1738,11 @@
       let scheduledTemplates = allChecklists.filter(c => {
         if (!c.recurrence || !c.recurrence.active) return false;
         if (c.roles && c.roles.length > 0 && !c.roles.includes(currentUser?.role)) return false;
+
+        // VALIDAÇÃO DO MARCO TEMPORAL ("Começa a partir de")
+        if (c.recurrence.startDate && selectedDateStr < c.recurrence.startDate) {
+          return false;
+        }
 
         const freq = c.recurrence.frequency;
         if (freq === 'daily') return true;
@@ -2057,25 +2078,62 @@
       }
     }
 
+    // --- VALIDAÇÃO DE PREENCHIMENTO TOTAL E NOVO FLUXO DE ENCERRAMENTO SEM ABRIR PDF DIRETO ---
+    function validateUnansweredQuestions() {
+      let unanswered = [];
+      const current = getCurrentChecklist();
+      current.categories.forEach((sec, sIdx) => {
+        sec.items.forEach((item, iIdx) => {
+          const key = `${sIdx}-${iIdx}`;
+          const ans = customAnswers[key];
+
+          if (ans === undefined || ans === null || ans === '') {
+            unanswered.push(item.title);
+          } else if (ans === 'nao-conforme') {
+            const plan = actionPlans[key];
+            if (!plan || !plan.action || !plan.date) {
+              unanswered.push(`${item.title} (Plano de ação incompleto)`);
+            }
+          } else if (ans === 'abrir') {
+            const om = maintenanceOrders[key];
+            if (!om || !om.equipment || !om.action || !om.date) {
+              unanswered.push(`${item.title} (Ordem de manutenção incompleta)`);
+            }
+          }
+        });
+      });
+      return unanswered;
+    }
+
     function finishChecklistEvaluation() {
+      // 1. Validação de preenchimento obrigatório de 100% das perguntas
+      const unanswered = validateUnansweredQuestions();
+      if (unanswered.length > 0) {
+        alert(`Impossível finalizar! As seguintes perguntas precisam ser preenchidas:\n\n- ${unanswered.join('\n- ')}`);
+        return;
+      }
+
+      // 2. Validação de fotos obrigatórias
       const missingPhotos = validatePhotos();
       if (missingPhotos.length > 0) {
         alert(`Atenção: As seguintes perguntas exigem envio de foto obrigatória:\n\n- ${missingPhotos.join('\n- ')}`);
         return;
       }
 
-      if (confirm("Deseja finalizar o checklist agora? As respostas serão consolidadas e as opções de PDF e WhatsApp serão liberadas.")) {
+      // 3. Pergunta de confirmação de encerramento
+      if (confirm("Deseja realmente encerrar este checklist? O relatório será salvo em 'Relatórios Salvos' para consulta.")) {
         isAuditFinished = true;
-        updateFooterFinishUI();
-        alert("Checklist finalizado! Agora você pode salvar em PDF ou enviar via WhatsApp.");
+        
+        // Gera e salva o relatório na nuvem/local sem abrir nova página/aba de PDF
+        buildAndSaveReport(false);
+
+        alert("Checklist encerrado com sucesso! O relatório está disponível na aba 'Relatórios Salvos'.");
+        switchChecklistTab('home');
       }
     }
 
-    function generatePDF() {
-      if (!isAuditFinished) {
-        return alert("Por favor, finalize o checklist antes de gerar o relatório em PDF.");
-      }
-
+    // MONTAGEM DO HTML DO RELATÓRIO COM FOTOS INLINE E EXPANSÍVEIS
+    function buildAndSaveReport(shouldOpenWindow = false) {
       const unit = document.getElementById("unit-selector").value;
       const supervisor = document.getElementById("supervisor-name").value;
       const notes = document.getElementById("notes").value;
@@ -2085,8 +2143,6 @@
 
       let ncList = [];
       let omList = [];
-      let photosList = [];
-
       let categoriesEvaluationHtml = "";
 
       currentChk.categories.forEach((sec, sIdx) => {
@@ -2111,10 +2167,28 @@
             statusBadge = `<em>${ans || 'Sem resposta'}</em>`;
           }
 
+          // MONTAGEM DE FOTOS INLINE NA PRÓPRIA PERGUNTA COM EXPANSÃO AO CLICAR
+          let photosArr = getPhotosArray(key);
+          let inlinePhotosHtml = "";
+          if (photosArr.length > 0) {
+            let imgs = photosArr.map(url => `
+              <img src="${url}" onclick="openImageViewer('${url}')" style="max-height: 80px; width: auto; max-width: 120px; border-radius: 4px; border: 1px solid #ddd; object-fit: cover; cursor: pointer;" title="Clique para expandir" alt="Evidência" />
+            `).join('');
+
+            inlinePhotosHtml = `
+              <div style="margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap;">
+                ${imgs}
+              </div>
+            `;
+          }
+
           itemsRows += `
             <tr style="border-bottom: 1px solid #f1f1f1;">
-              <td style="padding: 6px 8px; font-size: 11px; color: #333;">${item.title}</td>
-              <td style="padding: 6px 8px; font-size: 11px; text-align: right; white-space: nowrap;">${statusBadge}</td>
+              <td style="padding: 8px; font-size: 11px; color: #333;">
+                <div><strong>${item.title}</strong></div>
+                ${inlinePhotosHtml}
+              </td>
+              <td style="padding: 8px; font-size: 11px; text-align: right; vertical-align: top; white-space: nowrap;">${statusBadge}</td>
             </tr>
           `;
 
@@ -2136,11 +2210,6 @@
               date: om.date ? om.date.split('-').reverse().join('/') : 'Não definida'
             });
           }
-
-          let photosArr = getPhotosArray(key);
-          photosArr.forEach(url => {
-            photosList.push({ title: item.title, url: url });
-          });
         });
 
         categoriesEvaluationHtml += `
@@ -2175,13 +2244,6 @@
           <td style="padding: 8px; font-size: 11px; color: #444;">${om.action}</td>
           <td style="padding: 8px; font-size: 11px; text-align: center; font-weight: bold; color: #d97706; white-space: nowrap;">${om.date}</td>
         </tr>
-      `).join('');
-
-      let photosGridHtml = photosList.map(p => `
-        <div style="border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden; page-break-inside: avoid; background: #fff; text-align: center; padding: 6px;">
-          <div style="font-size: 10px; font-weight: bold; color: #1B5E20; margin-bottom: 4px; height: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center;">${p.title}</div>
-          <img src="${p.url}" style="max-height: 180px; width: auto; max-width: 100%; border-radius: 4px; object-fit: contain; margin: 0 auto; display: block;" alt="${p.title}" />
-        </div>
       `).join('');
 
       let html = `
@@ -2258,16 +2320,6 @@
             </table>
           </div>` : ''}
 
-          ${photosList.length > 0 ? `
-          <div style="margin-top: 24px; page-break-before: auto;">
-            <div style="background-color: #1B5E20; color: #fff; padding: 6px 10px; font-weight: bold; font-size: 11px; text-transform: uppercase; border-radius: 4px; margin-bottom: 10px;">
-              EVIDÊNCIAS FOTOGRÁFICAS ANEXADAS
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-              ${photosGridHtml}
-            </div>
-          </div>` : ''}
-
         </div>
       `;
 
@@ -2287,9 +2339,17 @@
 
       saveReportToCloud(newRep);
       clearDraft();
-      openPrintWindow(html);
-      alert("Relatório salvo com sucesso!");
-      switchChecklistTab('history');
+
+      if (shouldOpenWindow) {
+        openPrintWindow(html);
+      }
+    }
+
+    function generatePDF() {
+      if (!isAuditFinished) {
+        return alert("Por favor, finalize o checklist antes de gerar o relatório em PDF.");
+      }
+      buildAndSaveReport(true);
     }
 
     function shareWhatsApp() {
@@ -3556,7 +3616,8 @@
       container.innerHTML = "";
       allChecklists.forEach((c, idx) => {
         let rolesStr = c.roles ? c.roles.join(", ") : "todos";
-        let recurText = c.recurrence && c.recurrence.active ? `Recorrência: ${c.recurrence.frequency} (${c.recurrence.time || '08:00'})` : 'Recorrência: Inativa';
+        let startStr = c.recurrence && c.recurrence.startDate ? ` | Início: ${c.recurrence.startDate.split('-').reverse().join('/')}` : '';
+        let recurText = c.recurrence && c.recurrence.active ? `Recorrência: ${c.recurrence.frequency} (${c.recurrence.time || '08:00'})${startStr}` : 'Recorrência: Inativa';
 
         const div = document.createElement("div");
         div.className = "p-3 bg-stone-50 rounded-xl border text-xs space-y-1.5";
@@ -3587,7 +3648,8 @@
       document.getElementById("edit-model-role-gerente").checked = roles.includes("gerente");
       document.getElementById("edit-model-role-operador").checked = roles.includes("operador");
 
-      const rec = c.recurrence || { active: false, frequency: 'daily', time: '08:00', units: [] };
+      const rec = c.recurrence || { active: false, frequency: 'daily', time: '08:00', startDate: '', units: [] };
+      document.getElementById("edit-model-recur-start-date").value = rec.startDate || "";
       document.getElementById("edit-model-recur-active").value = rec.active ? "true" : "false";
       document.getElementById("edit-model-recur-freq").value = rec.frequency || "daily";
       document.getElementById("edit-model-recur-time").value = rec.time || "08:00";
@@ -3624,6 +3686,7 @@
       if (document.getElementById("edit-model-role-gerente").checked) selectedRoles.push("gerente");
       if (document.getElementById("edit-model-role-operador").checked) selectedRoles.push("operador");
 
+      const startDate = document.getElementById("edit-model-recur-start-date").value;
       const active = document.getElementById("edit-model-recur-active").value === "true";
       const freq = document.getElementById("edit-model-recur-freq").value;
       const time = document.getElementById("edit-model-recur-time").value || "08:00";
@@ -3642,6 +3705,7 @@
         active: active,
         frequency: freq,
         time: time,
+        startDate: startDate,
         weekday: weekday,
         specificDate: specificDate,
         units: selectedUnits
@@ -3932,6 +3996,7 @@
         return alert("Operadores não podem criar ou gerenciar modelos de checklist.");
       }
 
+      const startDate = document.getElementById("new-chk-recur-start-date").value;
       const isRecurActive = document.getElementById("new-chk-recur-active").value === "true";
       const recurFreq = document.getElementById("new-chk-recur-freq").value;
       const recurTime = document.getElementById("new-chk-recur-time").value || "08:00";
@@ -3952,6 +4017,7 @@
           active: isRecurActive,
           frequency: recurFreq,
           time: recurTime,
+          startDate: startDate,
           weekday: recurWeekday,
           specificDate: recurDate,
           units: selectedRecurUnits
@@ -4272,7 +4338,6 @@
       }
     }
 
-    // VALIDAÇÃO FLEXÍVEL DE FOTO (CONDICIONAL NC OU OBRIGATÓRIA SEMPRE)
     function validatePhotos() {
       let missing = [];
       const current = getCurrentChecklist();
