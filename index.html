@@ -3419,7 +3419,7 @@
         else if (code.includes("too-many-requests")) msg = "Muitas tentativas. Aguarde alguns minutos e tente de novo.";
         else if (code.includes("network")) msg = "Sem conexão com a internet.";
         else if (code.includes("invalid-email")) msg = "Usuário inválido. Use letras, números, ponto, hífen ou sublinhado.";
-        else if (code.includes("operation-not-allowed")) msg = "Login por senha não está ativado no Firebase.";
+        else if (code.includes("operation-not-allowed") || code.includes("configuration-not-found")) msg = "O login ainda não foi ativado no Firebase deste sistema. O administrador precisa abrir o console do Firebase → Authentication → Vamos começar → Método de login → ativar E-mail/senha.";
         else if (code.includes("api-key") || code.includes("internal-error") || code.includes("requests-from-referer")) msg = `O Firebase recusou a conexão (${code}).`;
         else msg = `Não foi possível entrar (${code || err?.message || "erro desconhecido"}).`;
         setLoginError(msg);
@@ -3475,7 +3475,7 @@
         const code = err?.code || "";
         if (code === "auth/email-already-in-use") return "Usuário ou senha incorretos.";
         if (created) { try { await created.delete(); } catch (e) { await auth.signOut().catch(() => {}); } }
-        if (code.includes("operation-not-allowed")) return "O login por usuário e senha ainda não foi ativado no Firebase (Authentication → Método de login → E-mail/senha).";
+        if (code.includes("operation-not-allowed") || code.includes("configuration-not-found")) return "O login ainda não foi ativado no Firebase deste sistema. O administrador precisa abrir o console do Firebase → Authentication → Vamos começar → Método de login → ativar E-mail/senha.";
         if (code.includes("permission-denied")) return "As regras do banco não permitiram criar seu perfil. Fale com o administrador.";
         return `Não foi possível migrar seu acesso (${code || err?.message || "erro desconhecido"}).`;
       }
@@ -3531,7 +3531,7 @@
         if (code === "auth/email-already-in-use") fail("Esse usuário já existe. Escolha outro ou entre com ele.");
         else if (code === "auth/weak-password") fail("Senha fraca. Use pelo menos 6 caracteres.");
         else if (code.includes("network")) fail("Sem conexão com a internet.");
-        else if (code.includes("operation-not-allowed")) fail("O login por usuário e senha ainda não foi ativado no Firebase.");
+        else if (code.includes("operation-not-allowed") || code.includes("configuration-not-found")) fail("O login ainda não foi ativado no Firebase deste sistema. O administrador precisa abrir o console do Firebase → Authentication → Vamos começar → Método de login → ativar E-mail/senha.");
         else fail(`Não foi possível enviar a solicitação (${code || err?.message}).`);
       } finally {
         signupInProgress = false;
