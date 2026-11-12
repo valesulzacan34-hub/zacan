@@ -51,6 +51,8 @@
       .sheet-title { @apply text-lg font-extrabold tracking-tight text-cb-ink; }
       .sheet-body { @apply px-5 py-4 overflow-y-auto space-y-4; }
       .sheet-footer { @apply px-5 py-4 border-t border-cb-line bg-white flex gap-2 pb-[max(1rem,env(safe-area-inset-bottom))]; }
+      .side-item { @apply flex items-center gap-3 w-full h-11 px-3 rounded-xl text-sm font-semibold text-white/75 hover:bg-white/10 hover:text-white transition; }
+      .side-item-active { @apply bg-cb-bordo text-white; }
       .nav-item { @apply flex items-center gap-3 w-full h-11 px-3 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-100 transition; }
       .seg { @apply flex p-1 rounded-xl bg-stone-100 gap-1; }
       .seg-btn { @apply flex-1 h-9 rounded-lg text-sm font-bold text-stone-500 transition; }
@@ -115,22 +117,11 @@
     }
   </style>
 </head>
-<body class="bg-cb-cream text-stone-800 antialiased pb-36 font-sans">
+<body class="newui bg-cb-bg text-cb-ink antialiased">
 
-  <!-- Toast de Desfazer Exclusão -->
-  <div id="undo-toast" class="fixed bottom-16 right-4 bg-stone-900 text-white px-4 py-3 rounded-xl shadow-2xl z-[100] hidden flex items-center gap-3 text-xs border border-emerald-500/40">
-    <span id="undo-text">Item excluído.</span>
-    <button onclick="executeUndo()" class="bg-emerald-600 text-white font-bold px-2.5 py-1 rounded hover:bg-emerald-500 transition uppercase text-[10px]">Desfazer</button>
-  </div>
-
-  <div id="cloud-sync-status" class="bg-stone-900 text-[10px] text-stone-300 px-3 py-1 flex justify-between items-center z-50">
-    <span id="sync-indicator">🟢 Sincronizado na Nuvem</span>
-    <span id="sync-time" class="text-stone-400 font-mono">Conectando...</span>
-  </div>
-
-  <div id="image-viewer-modal" class="fixed inset-0 z-[100] bg-black/90 hidden flex items-center justify-center p-4" onclick="this.classList.add('hidden')">
-    <img id="viewer-img" class="max-w-full max-h-full object-contain rounded-lg" alt="Visualização">
-    <span class="absolute top-4 right-4 text-white text-3xl font-bold cursor-pointer">✕</span>
+  <div id="image-viewer-modal" class="fixed inset-0 z-[135] bg-black/90 hidden flex items-center justify-center p-4" onclick="this.classList.add('hidden')">
+    <img id="viewer-img" class="max-w-full max-h-full object-contain rounded-xl" alt="Foto ampliada">
+    <button class="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 w-11 h-11 rounded-full bg-white/10 text-white flex items-center justify-center" aria-label="Fechar"><span data-icon="x" class="w-6 h-6"></span></button>
   </div>
 
   <!-- Avisos (toasts) -->
@@ -234,122 +225,64 @@
     </div>
   </div>
 
-  <!-- Tela de Seleção de Módulos -->
-  <div id="modules-screen" class="fixed inset-0 bg-cb-bordo-dark z-40 hidden flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white w-full max-w-sm rounded-2xl p-6 space-y-5 shadow-2xl border border-stone-200 text-center">
-      <div>
-        <img id="modules-logo-img" src="./logo.png" alt="Zacan Holding" class="h-14 w-auto object-contain mx-auto mb-1">
-        <h2 class="text-xs font-bold text-stone-800 uppercase tracking-wider">Painel Principal</h2>
-        <p class="text-[11px] text-stone-500">Selecione o módulo que deseja acessar</p>
+  <!-- ===================== APP ===================== -->
+  <div id="app-shell" class="hidden">
+
+    <!-- Menu lateral (computador) -->
+    <aside id="sidebar" class="hidden md:flex fixed inset-y-0 left-0 w-64 bg-cb-bordo-dark text-white flex-col z-30">
+      <div class="h-16 px-4 flex items-center gap-3 border-b border-white/10">
+        <span class="bg-white rounded-xl p-1 shrink-0"><img id="header-logo-img" src="./logo.png" alt="Zacan Holding" class="h-8 w-auto object-contain"></span>
+        <span class="font-extrabold tracking-tight">Zacan Holding</span>
       </div>
-
-      <div id="modules-grid" class="modules-grid grid gap-3 text-left"></div>
-
-      <div class="flex items-center justify-center gap-4 pt-1">
-        <button onclick="togglePasswordModal()" class="text-xs text-stone-600 font-bold hover:underline">
-          Alterar minha senha
-        </button>
-        <button onclick="handleLogout()" class="text-xs text-rose-600 font-bold hover:underline">
-          Encerrar Sessão (Sair)
+      <nav id="side-nav" class="flex-1 p-3 space-y-1 overflow-y-auto" aria-label="Navegação principal"></nav>
+      <div class="p-3 border-t border-white/10">
+        <button onclick="openProfileModal()" class="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/10 text-left">
+          <span id="side-avatar" class="w-10 h-10 rounded-full bg-cb-bordo text-white text-sm font-extrabold flex items-center justify-center shrink-0">?</span>
+          <span class="min-w-0">
+            <span id="side-user-name" class="block text-sm font-bold truncate">Usuário</span>
+            <span id="side-user-role" class="block text-xs text-white/60 truncate">perfil</span>
+          </span>
         </button>
       </div>
-    </div>
-  </div>
+    </aside>
 
-  <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity"></div>
-  <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-64 bg-cb-bordo-dark text-white z-50 transform -translate-x-full shadow-2xl flex flex-col border-r border-stone-700">
-    <div class="p-4 border-b border-stone-700 flex justify-between items-center bg-cb-bordo">
-      <div>
-        <h3 class="font-bold text-xs uppercase text-emerald-100">Menu Principal</h3>
-        <p id="sidebar-user-name" class="text-[11px] text-stone-300">Operador</p>
-      </div>
-      <button onclick="toggleSidebar()" class="text-stone-300 hover:text-white text-lg font-bold p-1">✕</button>
-    </div>
-
-    <div class="p-3 space-y-1.5 flex-1 text-xs font-semibold overflow-y-auto">
-      <button onclick="openModulesScreen(); toggleSidebar();" class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-emerald-900 transition">
-        🏠 Tela Inicial (Módulos)
-      </button>
-      <button onclick="selectModule('checklists'); toggleSidebar();" class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-emerald-900 transition flex items-center gap-1.5">
-        <span>📋 Checklists</span>
-      </button>
-      <button onclick="go('reports'); toggleSidebar();" class="w-full text-left pl-8 pr-3 py-2 rounded-lg hover:bg-emerald-900 transition flex items-center gap-1.5 text-stone-200">
-        <span>📂 Relatórios</span>
-      </button>
-      <button id="sidebar-btn-models" onclick="toggleConfigModal(); toggleSidebar();" class="hidden w-full text-left pl-8 pr-3 py-2 rounded-lg hover:bg-emerald-900 transition flex items-center gap-1.5 text-stone-200">
-        <span>🧩 Modelos de checklist</span>
-      </button>
-      <button onclick="selectModule('actions'); toggleSidebar();" class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-emerald-900 transition flex items-center gap-1.5">
-        <span>📋 Planos de Ação</span>
-      </button>
-      <button onclick="selectModule('technicians'); toggleSidebar();" class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-emerald-900 transition flex items-center gap-1.5">
-        <span>🔧 Manutenção</span>
-      </button>
-      <button id="sidebar-btn-users" onclick="toggleUsersModal(); toggleSidebar();" class="hidden w-full text-left px-3 py-2.5 rounded-lg hover:bg-emerald-900 transition">
-        👥 Gerenciar Unidades & Usuários
-      </button>
-    </div>
-
-    <div class="p-3 border-t border-stone-700 space-y-2">
-      <button onclick="togglePasswordModal(); toggleSidebar();" class="w-full py-2 bg-white/10 hover:bg-white/20 text-stone-100 text-xs font-bold rounded-lg transition uppercase">
-        🔑 Alterar minha senha
-      </button>
-      <button onclick="handleLogout()" class="w-full py-2 bg-rose-900/60 hover:bg-rose-900 text-rose-100 text-xs font-bold rounded-lg transition uppercase">
-        Sair
-      </button>
-    </div>
-  </div>
-
-  <header class="bg-cb-bordo text-white sticky top-0 z-30 shadow-lg border-b-2 border-emerald-900">
-    <div class="w-full px-6 py-2.5 flex justify-between items-center">
-      <div class="flex items-center gap-2.5">
-        <button onclick="toggleSidebar()" class="p-1.5 bg-cb-bordo-dark border border-stone-600 rounded-lg text-stone-200 hover:text-white transition text-sm font-bold">
-          ☰
-        </button>
-        <div class="bg-white p-1 rounded-lg shadow-sm flex items-center justify-center">
-          <img id="header-logo-img" src="./logo.png" alt="Zacan Holding" class="h-8 w-auto object-contain">
+    <!-- Barra superior -->
+    <header id="topbar" class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-cb-line md:ml-64 pt-[env(safe-area-inset-top)]">
+      <div class="h-16 px-4 md:px-8 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <img src="./logo.png" alt="Zacan Holding" class="h-9 w-auto object-contain md:hidden">
+          <span id="topbar-title" class="font-extrabold text-cb-bordo md:text-cb-ink md:text-lg tracking-tight truncate">Zacan Holding</span>
         </div>
-        <div>
-          <h1 class="text-xs font-bold tracking-wider uppercase text-emerald-100" id="header-app-title">Zacan Holding</h1>
-          <p class="text-[10px] text-stone-200" id="current-user-badge">Operador</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-2 relative">
-        <button onclick="toggleNotificationDropdown(event)" class="relative p-1.5 bg-cb-bordo-dark border border-stone-600 rounded-lg text-stone-200 hover:text-white transition text-sm">
-          🔔
-          <span id="global-notification-dot" class="absolute -top-1.5 -right-1.5 px-1.5 py-0.2 bg-rose-600 text-white rounded-full text-[9px] font-black border border-white hidden">0</span>
-        </button>
+        <div class="flex items-center gap-1.5 relative">
+          <span id="sync-pill" class="flex items-center gap-2 px-2.5 h-8 rounded-full text-[11px] font-semibold text-stone-500" title="Sincronização">
+            <span id="sync-dot" class="w-2 h-2 rounded-full bg-stone-300"></span>
+            <span id="sync-text" class="hidden sm:inline">Conectando</span>
+          </span>
+          <button id="btn-notifications" onclick="toggleNotificationDropdown(event)" class="icon-btn relative bg-stone-100" aria-label="Notificações">
+            <span data-icon="bell" class="w-5 h-5"></span>
+            <span id="global-notification-dot" class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-extrabold hidden items-center justify-center border-2 border-white">0</span>
+          </button>
+          <button id="btn-avatar" onclick="openProfileModal()" class="md:hidden w-11 h-11 rounded-full bg-cb-bordo text-white text-sm font-extrabold" aria-label="Meu perfil">?</button>
 
-        <div id="notification-dropdown" class="hidden absolute right-0 top-11 w-72 bg-white text-stone-800 rounded-xl shadow-2xl border border-stone-200 z-50 overflow-hidden">
-          <div class="bg-cb-bordo text-white px-3 py-2 text-xs font-bold flex justify-between items-center">
-            <div class="flex items-center gap-2">
-              <span>Notificações</span>
-              <span class="text-[10px] bg-emerald-100 text-emerald-900 px-1.5 py-0.2 rounded-full font-bold" id="notif-count-badge">0</span>
+          <div id="notification-dropdown" class="hidden absolute right-0 top-14 w-[min(22rem,calc(100vw-2rem))] bg-white rounded-2xl shadow-float border border-cb-line z-50 overflow-hidden">
+            <div class="px-4 py-3 flex justify-between items-center border-b border-cb-line">
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold">Notificações</span>
+                <span id="notif-count-badge" class="chip bg-cb-soft text-cb-bordo">0</span>
+              </div>
+              <button onclick="clearAllNotifications(event)" class="text-xs font-bold text-cb-bordo hover:underline">Marcar todas como lidas</button>
             </div>
-            <button onclick="clearAllNotifications(event)" class="text-[10px] text-emerald-100 hover:underline font-semibold">Limpar Tudo</button>
+            <div id="notification-list" class="max-h-80 overflow-y-auto divide-y divide-cb-line"></div>
           </div>
-          <div id="notification-list" class="max-h-64 overflow-y-auto divide-y divide-stone-100 text-xs"></div>
         </div>
-
-        <span id="current-module-badge" class="text-[10px] bg-cb-bordo-dark border border-stone-600 px-2 py-1 rounded-full text-emerald-100 font-bold uppercase tracking-wider">Checklists</span>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <div class="app-main p-6 w-full">
-    <!-- MÓDULO 1: CHECKLISTS -->
-    <div id="module-checklists-container" class="newui responsive-container w-full">
-      <div id="main-container" class="max-w-4xl mx-auto">
+    <main class="md:ml-64 px-4 md:px-8 pt-5 pb-32 md:pb-12">
+      <div class="max-w-4xl mx-auto">
 
-        <!-- Navegação interna do módulo -->
-        <div id="cl-subnav" class="flex items-center gap-2 mb-5">
-          <div class="seg flex-1 max-w-sm">
-            <button id="cl-tab-home" onclick="go('home')" class="seg-btn seg-btn-active">Início</button>
-            <button id="cl-tab-reports" onclick="go('reports')" class="seg-btn">Relatórios</button>
-          </div>
-          <button id="cl-btn-models" onclick="toggleConfigModal()" class="btn-secondary btn-sm !h-11 ml-auto hidden"><span data-icon="sliders" class="w-4 h-4"></span> <span class="hidden sm:inline">Modelos de checklist</span><span class="sm:hidden">Modelos</span></button>
-        </div>
-
+        <!-- ============ CHECKLISTS ============ -->
+        <div id="module-checklists-container">
         <!-- ============ INÍCIO ============ -->
         <section id="view-home" class="view space-y-5">
           <div id="home-banners" class="space-y-3"></div>
@@ -459,330 +392,351 @@
 
           <div id="history-list-container" class="space-y-2.5"></div>
         </section>
+        </div>
+
+        <!-- ============ PLANOS DE AÇÃO ============ -->
+        <section id="module-actions-container" class="view space-y-4 hidden">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h1 class="text-[26px] font-extrabold tracking-tight">Planos de ação</h1>
+              <p class="text-sm text-cb-muted">Acompanhamento e conversa com os responsáveis</p>
+            </div>
+            <div class="flex gap-2 shrink-0">
+              <button id="btn-trash-actions" onclick="toggleTrashModal()" class="icon-btn bg-white border border-stone-200 relative hidden" aria-label="Lixeira de planos">
+                <span data-icon="trash" class="w-5 h-5"></span>
+                <span id="trash-count" class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-stone-700 text-white text-[10px] font-bold flex items-center justify-center">0</span>
+              </button>
+              <button onclick="openNewActionModal()" class="btn-primary"><span data-icon="plus" class="w-4 h-4"></span><span class="hidden sm:inline">Novo plano</span></button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5">
+            <button onclick="filterActionsByCounter('Pendente')" ondblclick="clearStatusFilter()" class="card p-3.5 text-left hover:ring-2 hover:ring-rose-200 transition" title="Toque para filtrar, toque duplo para limpar">
+              <span id="counter-pending" class="block text-2xl font-extrabold text-rose-700">0</span>
+              <span class="text-xs font-bold text-stone-500">Pendentes</span>
+            </button>
+            <button onclick="filterActionsByCounter('Em Andamento')" ondblclick="clearStatusFilter()" class="card p-3.5 text-left hover:ring-2 hover:ring-amber-200 transition" title="Toque para filtrar, toque duplo para limpar">
+              <span id="counter-progress" class="block text-2xl font-extrabold text-amber-700">0</span>
+              <span class="text-xs font-bold text-stone-500">Em andamento</span>
+            </button>
+            <button onclick="filterActionsByCounter('Concluído')" ondblclick="clearStatusFilter()" class="card p-3.5 text-left hover:ring-2 hover:ring-emerald-200 transition" title="Toque para filtrar, toque duplo para limpar">
+              <span id="counter-completed" class="block text-2xl font-extrabold text-emerald-700">0</span>
+              <span class="text-xs font-bold text-stone-500">Concluídos</span>
+            </button>
+          </div>
+
+          <div class="seg">
+            <button id="actions-tab-pending" onclick="switchActionsTab('pending')" class="seg-btn seg-btn-active">Em aberto</button>
+            <button id="actions-tab-completed" onclick="switchActionsTab('completed')" class="seg-btn">Concluídos</button>
+          </div>
+
+          <details class="card group">
+            <summary class="list-none cursor-pointer px-4 h-12 flex items-center justify-between text-sm font-bold">
+              <span class="flex items-center gap-2"><span data-icon="filter" class="w-4 h-4"></span> Filtros</span>
+              <span data-icon="chevron-down" class="w-4 h-4 transition group-open:rotate-180"></span>
+            </summary>
+            <div class="px-4 pb-4 grid grid-cols-2 lg:grid-cols-3 gap-3">
+              <div>
+                <label for="filter-action-store" class="label">Loja</label>
+                <select id="filter-action-store" onchange="renderCentralizedActions()" class="field"><option value="">Todas as lojas</option></select>
+              </div>
+              <div>
+                <label for="filter-status" class="label">Status</label>
+                <select id="filter-status" onchange="renderCentralizedActions()" class="field"><option value="">Todos</option></select>
+              </div>
+              <div>
+                <label for="filter-priority" class="label">Tarja</label>
+                <select id="filter-priority" onchange="renderCentralizedActions()" class="field"><option value="">Todas</option></select>
+              </div>
+              <div>
+                <label for="filter-action-type" class="label">Tipo</label>
+                <select id="filter-action-type" onchange="renderCentralizedActions()" class="field">
+                  <option value="">Todos</option>
+                  <option value="nc">Não conformidade</option>
+                  <option value="om">Manutenção</option>
+                  <option value="avulso">Avulso</option>
+                </select>
+              </div>
+              <div>
+                <label for="action-date-start" class="label">Prazo a partir de</label>
+                <input type="date" id="action-date-start" onchange="renderCentralizedActions()" class="field">
+              </div>
+              <div>
+                <label for="action-date-end" class="label">Prazo até</label>
+                <input type="date" id="action-date-end" onchange="renderCentralizedActions()" class="field">
+              </div>
+            </div>
+          </details>
+
+          <div class="flex items-center justify-between gap-2 flex-wrap px-1">
+            <label class="flex items-center gap-2 text-sm font-semibold text-stone-700 cursor-pointer">
+              <input type="checkbox" id="select-all-actions" onchange="toggleSelectAllActions(this.checked)" class="w-5 h-5 rounded accent-[#1B5E20]">
+              Selecionar todos <span class="text-stone-400 font-medium">(<span id="selected-actions-count">0</span>)</span>
+            </label>
+            <div class="flex gap-2">
+              <button onclick="sendWhatsAppFollowUpBatch()" class="btn-secondary btn-sm"><span data-icon="message" class="w-4 h-4"></span> Follow-up</button>
+              <button onclick="deleteSelectedActionsBatch()" id="btn-delete-batch" class="btn-secondary btn-sm !text-rose-700 hidden"><span data-icon="trash" class="w-4 h-4"></span> Excluir</button>
+            </div>
+          </div>
+
+          <div id="centralized-actions-list" class="space-y-3"></div>
+        </section>
+
+        <!-- ============ MANUTENÇÃO ============ -->
+        <section id="module-technicians-container" class="view space-y-4 hidden">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h1 class="text-[26px] font-extrabold tracking-tight">Manutenção</h1>
+              <p class="text-sm text-cb-muted">Prestadores de serviço e garantias</p>
+            </div>
+            <div class="flex gap-2 shrink-0">
+              <button onclick="toggleWarrantyModal()" class="btn-soft"><span data-icon="shield" class="w-4 h-4"></span><span class="hidden sm:inline">Garantias</span></button>
+              <button id="btn-add-tech" onclick="openTechModal()" class="btn-primary"><span data-icon="plus" class="w-4 h-4"></span><span class="hidden sm:inline">Novo contato</span></button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="filter-tech-region" class="label">Região</label>
+              <select id="filter-tech-region" onchange="renderTechniciansList()" class="field">
+                <option value="">Todas</option>
+                <option value="São José dos Campos">São José dos Campos</option>
+                <option value="Mogi">Mogi</option>
+                <option value="São Paulo">São Paulo</option>
+              </select>
+            </div>
+            <div>
+              <label for="filter-tech-service" class="label">Serviço</label>
+              <select id="filter-tech-service" onchange="renderTechniciansList()" class="field"><option value="">Todos</option></select>
+            </div>
+          </div>
+
+          <div id="technicians-list-container" class="space-y-4"></div>
+        </section>
       </div>
-    </div>
-
-    <!-- MÓDULO 2: PLANOS DE AÇÃO -->
-    <main id="module-actions-container" class="responsive-container space-y-4 hidden w-full">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-200 space-y-3">
-        <div class="flex justify-between items-center flex-wrap gap-2">
-          <div>
-            <h2 class="font-bold text-cb-bordo text-xs uppercase tracking-wider">Agenda de Planos de Ação</h2>
-            <p class="text-xs text-stone-500">Acompanhamento e chat com os responsáveis</p>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="toggleTrashModal()" id="btn-trash-actions" class="hidden px-3 py-2 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs rounded-lg transition shadow-sm">
-              🗑️ Lixeira de Planos (<span id="trash-count">0</span>)
-            </button>
-            <button onclick="openNewActionModal()" class="px-3 py-2 bg-cb-bordo hover:bg-emerald-900 text-white font-bold text-xs rounded-lg transition shadow-sm">
-              + Novo Plano de Ação
-            </button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2 pt-1 text-center">
-          <div onclick="filterActionsByCounter('Pendente')" ondblclick="clearStatusFilter()" class="bg-rose-50 border border-rose-200 p-2.5 rounded-xl shadow-sm cursor-pointer hover:bg-rose-100 transition" title="Clique para filtrar, duplo clique para limpar">
-            <span class="block text-[10px] font-bold text-rose-800 uppercase">Pendentes</span>
-            <span id="counter-pending" class="text-lg font-black text-rose-700">0</span>
-          </div>
-          <div onclick="filterActionsByCounter('Em Andamento')" ondblclick="clearStatusFilter()" class="bg-amber-50 border border-amber-200 p-2.5 rounded-xl shadow-sm cursor-pointer hover:bg-amber-100 transition" title="Clique para filtrar, duplo clique para limpar">
-            <span class="block text-[10px] font-bold text-amber-900 uppercase">Em Andamento</span>
-            <span id="counter-progress" class="text-lg font-black text-amber-700">0</span>
-          </div>
-          <div onclick="filterActionsByCounter('Concluído')" ondblclick="clearStatusFilter()" class="bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl shadow-sm cursor-pointer hover:bg-emerald-100 transition" title="Clique para filtrar, duplo clique para limpar">
-            <span class="block text-[10px] font-bold text-emerald-800 uppercase">Concluídos</span>
-            <span id="counter-completed" class="text-lg font-black text-emerald-700">0</span>
-          </div>
-        </div>
-
-        <div class="flex border-b border-stone-200 text-xs font-bold pt-2">
-          <button id="actions-tab-pending" onclick="switchActionsTab('pending')" class="flex-1 py-2 border-b-2 border-cb-bordo text-cb-bordo transition">📋 Pendentes</button>
-          <button id="actions-tab-completed" onclick="switchActionsTab('completed')" class="flex-1 py-2 border-b-2 border-transparent text-stone-400 transition">✅ Concluídos</button>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-6 gap-2 text-xs pt-1">
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Filtrar Loja:</label>
-            <select id="filter-action-store" onchange="renderCentralizedActions()" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-              <option value="">Todas as Lojas</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Filtrar Status:</label>
-            <select id="filter-status" onchange="renderCentralizedActions()" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-              <option value="">Todos os Status</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Filtrar Tarja:</label>
-            <select id="filter-priority" onchange="renderCentralizedActions()" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-              <option value="">Todas as Tarjas</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Tipo de Ação:</label>
-            <select id="filter-action-type" onchange="renderCentralizedActions()" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-              <option value="">Todos os Tipos</option>
-              <option value="nc">Não Conformidade</option>
-              <option value="om">Manutenção</option>
-              <option value="avulso">Avulso / Manual</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">A partir de:</label>
-            <input type="date" id="action-date-start" onchange="renderCentralizedActions()" class="w-full border rounded p-2 bg-stone-50">
-          </div>
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Até:</label>
-            <input type="date" id="action-date-end" onchange="renderCentralizedActions()" class="w-full border rounded p-2 bg-stone-50">
-          </div>
-        </div>
-
-        <div id="batch-actions-bar" class="p-2.5 bg-stone-100 rounded-xl border border-stone-200 flex justify-between items-center flex-wrap gap-2 text-xs">
-          <div class="flex items-center gap-2">
-            <input type="checkbox" id="select-all-actions" onchange="toggleSelectAllActions(this.checked)" class="rounded text-cb-bordo focus:ring-0">
-            <label for="select-all-actions" class="font-bold text-stone-700 cursor-pointer">Selecionar Todos</label>
-            <span class="text-stone-500">(<span id="selected-actions-count">0</span> selecionados)</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="sendWhatsAppFollowUpBatch()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded shadow-sm flex items-center gap-1 transition">
-              💬 Enviar Follow-up via WhatsApp
-            </button>
-            <button onclick="deleteSelectedActionsBatch()" id="btn-delete-batch" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded shadow-sm transition">
-              🗑️ Excluir Selecionados
-            </button>
-          </div>
-        </div>
-      </div>
-      <div id="centralized-actions-list" class="space-y-3"></div>
     </main>
 
-    <!-- MÓDULO 3: MANUTENÇÃO & CONTROLE DE GARANTIAS -->
-    <main id="module-technicians-container" class="responsive-container space-y-4 hidden w-full">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-200 space-y-3">
-        <div class="flex justify-between items-center flex-wrap gap-2">
+    <!-- Menu inferior (celular) -->
+    <nav id="bottom-nav" class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-cb-line flex justify-around px-2 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]" aria-label="Navegação principal"></nav>
+  </div>
+
+  <!-- ===================== JANELAS ===================== -->
+
+  <!-- Perfil -->
+  <div id="profile-modal" class="overlay hidden" onclick="if(event.target===this) closeModal('profile-modal')">
+    <div class="sheet">
+      <div class="px-5 pt-6 pb-4 flex items-center gap-4 border-b border-cb-line">
+        <span id="profile-avatar" class="w-14 h-14 rounded-full bg-cb-bordo text-white text-lg font-extrabold flex items-center justify-center shrink-0">?</span>
+        <div class="min-w-0 flex-1">
+          <p id="profile-name" class="font-extrabold text-lg truncate">Usuário</p>
+          <p id="profile-meta" class="text-sm text-cb-muted truncate"></p>
+        </div>
+        <button onclick="closeModal('profile-modal')" class="icon-btn" aria-label="Fechar"><span data-icon="x" class="w-5 h-5"></span></button>
+      </div>
+      <div class="p-3 space-y-1">
+        <div id="profile-admin-links" class="space-y-1"></div>
+        <button onclick="closeModal('profile-modal'); togglePasswordModal()" class="nav-item"><span data-icon="key" class="w-5 h-5"></span> Alterar minha senha</button>
+        <button onclick="handleLogout()" class="nav-item !text-rose-700 hover:!bg-rose-50"><span data-icon="logout" class="w-5 h-5"></span> Sair</button>
+      </div>
+      <div class="h-[env(safe-area-inset-bottom)]"></div>
+    </div>
+  </div>
+
+  <!-- Lixeira de planos -->
+  <div id="trash-actions-modal" class="overlay hidden" onclick="if(event.target===this) toggleTrashModal()">
+    <div class="sheet md:max-w-xl h-[80vh]">
+      <div class="sheet-header">
+        <h3 class="sheet-title">Lixeira de planos</h3>
+        <button onclick="toggleTrashModal()" class="icon-btn" aria-label="Fechar"><span data-icon="x" class="w-5 h-5"></span></button>
+      </div>
+      <div id="trash-actions-list" class="sheet-body flex-1 !space-y-2.5 bg-cb-bg"></div>
+    </div>
+  </div>
+
+  <!-- Conclusão de manutenção -->
+  <div id="maintenance-resolution-modal" class="overlay hidden">
+    <div class="sheet">
+      <div class="sheet-header">
+        <div>
+          <h3 class="sheet-title">Concluir manutenção</h3>
+          <p class="text-xs text-cb-muted">Registre o serviço e a garantia</p>
+        </div>
+        <button onclick="closeMaintenanceResolutionModal()" class="icon-btn" aria-label="Fechar"><span data-icon="x" class="w-5 h-5"></span></button>
+      </div>
+      <input type="hidden" id="res-action-id">
+      <div class="sheet-body">
+        <div>
+          <label for="res-prestador-select" class="label">Prestador cadastrado</label>
+          <select id="res-prestador-select" onchange="onSelectPrestadorChange()" class="field"></select>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-3">
           <div>
-            <h2 class="font-bold text-cb-bordo text-sm uppercase tracking-wider">🔧 Manutenção & Prestadores de Serviço</h2>
-            <p class="text-xs text-stone-500">Gerencie prestadores, contatos e o controle de garantias</p>
+            <label for="res-empresa" class="label">Empresa / prestador</label>
+            <input type="text" id="res-empresa" placeholder="Ex.: Refrigeração Silva" class="field">
           </div>
-          <div class="flex gap-2">
-            <button onclick="toggleWarrantyModal()" class="px-3 py-2 bg-emerald-800 text-white font-bold text-xs rounded-lg hover:bg-emerald-900 transition shadow-sm">
-              🛡️ Controle de Garantias
-            </button>
-            <button id="btn-add-tech" onclick="openTechModal()" class="px-3 py-2 bg-cb-bordo text-white font-bold text-xs rounded-lg hover:bg-emerald-900 transition">
-              + Novo Contato
-            </button>
+          <div>
+            <label for="res-contato" class="label">Telefone / WhatsApp</label>
+            <input type="text" id="res-contato" placeholder="(12) 99999-9999" class="field">
           </div>
         </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2">
+        <div>
+          <label for="res-equipamento" class="label">Equipamento / item</label>
+          <input type="text" id="res-equipamento" placeholder="Ex.: Chapa de lanches" class="field">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold text-stone-600 mb-1">Filtrar por Região:</label>
-            <select id="filter-tech-region" onchange="renderTechniciansList()" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-              <option value="">Todas as Regiões</option>
+            <label for="res-v-mao" class="label">Mão de obra (R$)</label>
+            <input type="number" step="0.01" id="res-v-mao" placeholder="0,00" class="field">
+          </div>
+          <div>
+            <label for="res-v-pecas" class="label">Peças (R$)</label>
+            <input type="number" step="0.01" id="res-v-pecas" placeholder="0,00" class="field">
+          </div>
+          <div>
+            <label for="res-g-mao" class="label">Garantia mão de obra (dias)</label>
+            <input type="number" id="res-g-mao" value="90" class="field">
+          </div>
+          <div>
+            <label for="res-g-pecas" class="label">Garantia peças (dias)</label>
+            <input type="number" id="res-g-pecas" value="90" class="field">
+          </div>
+        </div>
+        <div>
+          <label for="res-nf-file" class="label">Nota fiscal (foto ou PDF)</label>
+          <input type="file" id="res-nf-file" accept="image/*,.pdf" class="block w-full text-sm file:mr-3 file:h-10 file:px-4 file:rounded-lg file:border-0 file:bg-cb-soft file:text-cb-bordo file:font-bold">
+        </div>
+        <div>
+          <label for="res-desc" class="label">Serviço realizado</label>
+          <textarea id="res-desc" rows="2" placeholder="O que foi feito..." class="field-area"></textarea>
+        </div>
+      </div>
+      <div class="sheet-footer">
+        <button onclick="closeMaintenanceResolutionModal()" class="btn-secondary">Cancelar</button>
+        <button onclick="confirmMaintenanceResolution()" class="btn-success flex-1">Concluir e registrar garantia</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Garantias -->
+  <div id="warranty-control-modal" class="overlay hidden" onclick="if(event.target===this) toggleWarrantyModal()">
+    <div class="sheet md:max-w-3xl h-[85vh]">
+      <div class="sheet-header">
+        <h3 class="sheet-title">Controle de garantias</h3>
+        <button onclick="toggleWarrantyModal()" class="icon-btn" aria-label="Fechar"><span data-icon="x" class="w-5 h-5"></span></button>
+      </div>
+      <div id="warranty-list-container" class="sheet-body flex-1 !space-y-2.5 bg-cb-bg"></div>
+    </div>
+  </div>
+
+  <!-- Novo plano manual -->
+  <div id="new-action-modal" class="overlay hidden" onclick="if(event.target===this) toggleNewActionModal()">
+    <div class="sheet">
+      <div class="sheet-header">
+        <h3 class="sheet-title">Novo plano de ação</h3>
+        <button onclick="toggleNewActionModal()" class="icon-btn" aria-label="Fechar"><span data-icon="x" class="w-5 h-5"></span></button>
+      </div>
+      <div class="sheet-body">
+        <div>
+          <label for="manual-action-unit" class="label">Loja</label>
+          <select id="manual-action-unit" class="field"></select>
+        </div>
+        <div>
+          <label for="manual-action-title" class="label">Ocorrência</label>
+          <input type="text" id="manual-action-title" placeholder="Ex.: Ajuste de equipamento" class="field">
+        </div>
+        <div>
+          <label for="manual-action-desc" class="label">Ação a ser realizada</label>
+          <textarea id="manual-action-desc" rows="2" placeholder="Detalhes da ação..." class="field-area"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="manual-action-date" class="label">Prazo</label>
+            <input type="date" id="manual-action-date" class="field">
+          </div>
+          <div>
+            <label for="manual-action-type" class="label">Tipo</label>
+            <select id="manual-action-type" class="field">
+              <option value="nc">Não conformidade</option>
+              <option value="om">Manutenção</option>
+              <option value="avulso">Avulso</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label for="manual-action-file" class="label">Foto (opcional)</label>
+          <input type="file" id="manual-action-file" accept="image/*" class="block w-full text-sm file:mr-3 file:h-10 file:px-4 file:rounded-lg file:border-0 file:bg-cb-soft file:text-cb-bordo file:font-bold">
+        </div>
+      </div>
+      <div class="sheet-footer">
+        <button onclick="toggleNewActionModal()" class="btn-secondary">Cancelar</button>
+        <button onclick="saveManualAction()" class="btn-primary flex-1">Criar plano</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prestador -->
+  <div id="tech-modal" class="overlay hidden" onclick="if(event.target===this) toggleTechModal()">
+    <div class="sheet">
+      <div class="sheet-header">
+        <h3 id="tech-modal-title" class="sheet-title">Novo contato</h3>
+        <button onclick="toggleTechModal()" class="icon-btn" aria-label="Fechar"><span data-icon="x" class="w-5 h-5"></span></button>
+      </div>
+      <input type="hidden" id="tech-edit-idx">
+      <div class="sheet-body">
+        <div>
+          <label for="tech-name" class="label">Prestador / empresa</label>
+          <input type="text" id="tech-name" placeholder="Ex.: Refrigeração Silva" class="field">
+        </div>
+        <div>
+          <label for="tech-service" class="label">Serviço / especialidade</label>
+          <input type="text" id="tech-service" placeholder="Ex.: Equipamentos de refrigeração" class="field">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="tech-region" class="label">Região</label>
+            <select id="tech-region" class="field">
               <option value="São José dos Campos">São José dos Campos</option>
               <option value="Mogi">Mogi</option>
               <option value="São Paulo">São Paulo</option>
+              <option value="Geral">Geral</option>
             </select>
           </div>
           <div>
-            <label class="block font-bold text-stone-600 mb-1">Filtrar por Serviço:</label>
-            <select id="filter-tech-service" onchange="renderTechniciansList()" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-              <option value="">Todos os Serviços</option>
-            </select>
+            <label for="tech-phone" class="label">Telefone</label>
+            <input type="text" id="tech-phone" placeholder="(00) 00000-0000" class="field">
           </div>
         </div>
       </div>
-
-      <div id="technicians-list-container" class="space-y-3"></div>
-    </main>
-  </div>
-
-  <!-- MODAIS DO SISTEMA -->
-  <div id="trash-actions-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-lg h-[80vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden border text-xs">
-      <div class="p-4 border-b border-stone-200 flex justify-between items-center bg-cb-bordo text-white">
-        <h3 class="font-bold text-sm uppercase text-emerald-100">🗑️ Lixeira de Planos de Ação</h3>
-        <button onclick="toggleTrashModal()" class="font-bold text-stone-300 hover:text-white text-base">✕</button>
-      </div>
-      <div id="trash-actions-list" class="p-4 overflow-y-auto space-y-2.5 flex-1 bg-stone-50"></div>
-    </div>
-  </div>
-
-
-  <div id="maintenance-resolution-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white w-full max-w-lg rounded-2xl p-5 space-y-4 shadow-2xl border text-xs my-8">
-      <div class="flex justify-between items-center border-b pb-2 bg-cb-bordo text-white -mx-5 -mt-5 p-4 rounded-t-2xl">
-        <h3 class="font-bold text-sm uppercase text-emerald-100">🔧 Encerramento & Controle de Garantia</h3>
-        <button onclick="closeMaintenanceResolutionModal()" class="font-bold text-stone-300 hover:text-white text-base">✕</button>
-      </div>
-      <input type="hidden" id="res-action-id">
-
-      <div class="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
-        <div>
-          <label class="block font-bold text-stone-700 mb-1">Selecionar Prestador Cadastrado ou Inserir Novo:</label>
-          <select id="res-prestador-select" onchange="onSelectPrestadorChange()" class="w-full border rounded p-2 bg-stone-50 font-semibold mb-1"></select>
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Nome da Empresa ou Prestador de Serviço:</label>
-          <input type="text" id="res-empresa" placeholder="Ex: Refrigeração Silva" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Contato (Telefone / WhatsApp):</label>
-          <input type="text" id="res-contato" placeholder="(12) 99999-9999" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Qual Equipamento / Item?</label>
-          <input type="text" id="res-equipamento" placeholder="Ex: Chapa de Lanches" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Valor Mão de Obra (R$):</label>
-            <input type="number" step="0.01" id="res-v-mao" placeholder="0.00" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-          </div>
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Valor Peças (R$):</label>
-            <input type="number" step="0.01" id="res-v-pecas" placeholder="0.00" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-          </div>
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Anexar Nota Fiscal de Compra / Serviço:</label>
-          <input type="file" id="res-nf-file" accept="image/*,.pdf" class="w-full border rounded p-1.5 bg-stone-50 text-xs">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Garantia Mão de Obra (Dias):</label>
-            <input type="number" id="res-g-mao" value="90" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-          </div>
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Garantia Peças (Dias):</label>
-            <input type="number" id="res-g-pecas" value="90" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-          </div>
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Breve Descrição do Serviço Realizado:</label>
-          <textarea id="res-desc" rows="2" placeholder="O que foi feito..." class="w-full border rounded p-2 bg-stone-50"></textarea>
-        </div>
-        <button onclick="confirmMaintenanceResolution()" class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg uppercase shadow-md transition">Salvar Conclusão & Registrar Garantia</button>
+      <div class="sheet-footer">
+        <button id="btn-delete-tech" onclick="deleteTechnicianFromModal()" class="btn-secondary !text-rose-700 hidden">Excluir</button>
+        <button onclick="saveTechnician()" class="btn-primary flex-1">Salvar contato</button>
       </div>
     </div>
   </div>
 
-  <div id="warranty-control-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-4xl h-[85vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden border text-xs">
-      <div class="p-4 border-b border-stone-200 flex justify-between items-center bg-cb-bordo text-white">
-        <h3 class="font-bold text-sm uppercase text-emerald-100">🛡️ Controle de Garantias</h3>
-        <button onclick="toggleWarrantyModal()" class="font-bold text-stone-300 hover:text-white text-base">✕</button>
+  <!-- Chat -->
+  <div id="chat-modal" class="overlay hidden" onclick="if(event.target===this) toggleChatModal()">
+    <div class="sheet md:max-w-xl h-[92vh] md:h-[85vh]">
+      <div class="sheet-header">
+        <div class="min-w-0">
+          <h3 id="chat-modal-title" class="sheet-title truncate">Plano de ação</h3>
+          <p id="chat-modal-subtitle" class="text-xs text-cb-muted truncate"></p>
+        </div>
+        <button onclick="toggleChatModal()" class="icon-btn" aria-label="Fechar"><span data-icon="x" class="w-5 h-5"></span></button>
       </div>
-      <div id="warranty-list-container" class="p-4 overflow-y-auto space-y-3 flex-1 bg-stone-50"></div>
-    </div>
-  </div>
-
-  <div id="new-action-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl border text-xs">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-cb-bordo text-sm uppercase">Novo Plano de Ação Manual</h3>
-        <button onclick="toggleNewActionModal()" class="font-bold text-stone-400 hover:text-stone-700 text-base">✕</button>
-      </div>
-      <div class="space-y-3">
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Loja / Unidade:</label>
-          <select id="manual-action-unit" class="w-full border rounded p-2 bg-stone-50 font-semibold"></select>
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Título / Ocorrência:</label>
-          <input type="text" id="manual-action-title" placeholder="Ex: Ajuste de Equipamento" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Ação a ser Realizada:</label>
-          <textarea id="manual-action-desc" rows="2" placeholder="Detalhes da ação..." class="w-full border rounded p-2 bg-stone-50"></textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Prazo de Conclusão:</label>
-            <input type="date" id="manual-action-date" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-          </div>
-          <div>
-            <label class="block font-bold text-stone-600 mb-1">Tipo de Ação:</label>
-            <select id="manual-action-type" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-              <option value="nc">Não Conformidade</option>
-              <option value="om">Manutenção</option>
-              <option value="avulso">Avulso Geral</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Anexar Imagem (Opcional):</label>
-          <input type="file" id="manual-action-file" accept="image/*" class="w-full border rounded p-1.5 bg-stone-50 text-xs">
-        </div>
-        <button onclick="saveManualAction()" class="w-full py-2.5 bg-cb-bordo hover:bg-emerald-900 text-white font-bold rounded uppercase">Criar Plano de Ação</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="tech-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl border text-xs">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 id="tech-modal-title" class="font-bold text-cb-bordo text-sm uppercase">Novo Contato de Manutenção</h3>
-        <button onclick="toggleTechModal()" class="font-bold text-stone-400 hover:text-stone-700 text-base">✕</button>
-      </div>
-      <input type="hidden" id="tech-edit-idx">
-      <div class="space-y-3">
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Nome do Prestador / Empresa:</label>
-          <input type="text" id="tech-name" placeholder="Ex: Refrigeração Silva" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Serviço / Especialidade:</label>
-          <input type="text" id="tech-service" placeholder="Ex: Equipamentos de Refrigeração" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Região:</label>
-          <select id="tech-region" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-            <option value="São José dos Campos">São José dos Campos</option>
-            <option value="Mogi">Mogi</option>
-            <option value="São Paulo">São Paulo</option>
-            <option value="Geral">Geral (Todas Regiões)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-bold text-stone-600 mb-1">Telefone / WhatsApp:</label>
-          <input type="text" id="tech-phone" placeholder="(00) 00000-0000" class="w-full border rounded p-2 bg-stone-50 font-semibold">
-        </div>
-        <div class="flex justify-between items-center pt-2">
-          <button id="btn-delete-tech" onclick="deleteTechnicianFromModal()" class="px-3 py-2 bg-rose-100 text-rose-800 font-bold rounded hidden">Excluir</button>
-          <button onclick="saveTechnician()" class="flex-1 py-2.5 bg-cb-bordo hover:bg-emerald-900 text-white font-bold rounded uppercase ml-auto">Salvar Contato</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="chat-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-2 sm:p-4">
-    <div class="bg-white w-full max-w-lg h-[90vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden border">
-      <div class="p-3.5 border-b border-stone-200 flex justify-between items-center bg-cb-bordo text-white">
-        <div>
-          <h3 id="chat-modal-title" class="font-bold text-sm text-emerald-100">Detalhes & Chat</h3>
-          <p id="chat-modal-subtitle" class="text-[11px] text-stone-200">Unidade e Prazo</p>
-        </div>
-        <button onclick="toggleChatModal()" class="text-stone-300 hover:text-white text-xl font-bold px-2 py-0.5">✕</button>
-      </div>
-
-      <div id="chat-action-details" class="p-3.5 bg-stone-100 border-b text-xs space-y-2"></div>
-      <div id="chat-messages-container" class="flex-1 p-4 overflow-y-auto space-y-3 bg-stone-50 text-xs"></div>
-
-      <div class="p-3 border-t bg-white flex items-center gap-2">
-        <label class="cursor-pointer p-2 text-stone-500 hover:text-cb-bordo transition rounded-lg border bg-stone-50" title="Anexar Foto ou Arquivo">
-          📎
+      <div id="chat-action-details" class="px-5 py-3 bg-cb-bg border-b border-cb-line text-sm space-y-2 max-h-[35%] overflow-y-auto"></div>
+      <div id="chat-messages-container" class="flex-1 px-4 py-4 overflow-y-auto space-y-3 text-sm"></div>
+      <div class="px-3 pt-3 border-t border-cb-line flex items-center gap-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <label class="icon-btn cursor-pointer" title="Anexar foto ou arquivo">
+          <span data-icon="paperclip" class="w-5 h-5"></span>
+          <span class="sr-only">Anexar</span>
           <input type="file" id="chat-file-input" accept="image/*,.pdf,.doc,.docx" class="hidden" onchange="sendChatAttachment(event)">
         </label>
-        <input type="text" id="chat-input-msg" placeholder="Mensagem..." class="flex-1 text-xs border rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-emerald-700" onkeydown="if(event.key === 'Enter') sendChatMessage()">
-        <button onclick="sendChatMessage()" class="px-4 py-2.5 bg-cb-bordo hover:bg-emerald-900 text-white text-xs font-bold rounded-lg transition">
-          Enviar
-        </button>
+        <input type="text" id="chat-input-msg" placeholder="Escreva uma mensagem" maxlength="2000" class="field !rounded-full" onkeydown="if(event.key === 'Enter') sendChatMessage()">
+        <button onclick="sendChatMessage()" class="w-11 h-11 rounded-full bg-cb-bordo text-white flex items-center justify-center shrink-0 hover:bg-[#14451A]" aria-label="Enviar"><span data-icon="send" class="w-5 h-5"></span></button>
       </div>
     </div>
   </div>
-
   <!-- Lojas, usuários e configurações (admin) -->
   <div id="users-modal" class="newui overlay hidden" onclick="if(event.target===this) toggleUsersModal()">
     <div class="sheet md:max-w-2xl h-[92vh] md:h-[88vh]">
@@ -1247,7 +1201,7 @@
   </div>
 
   <!-- Rodapé da execução do checklist -->
-  <div id="audit-footer" class="newui fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-cb-line px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] hidden">
+  <div id="audit-footer" class="newui fixed bottom-0 inset-x-0 md:left-64 z-30 bg-white/95 backdrop-blur border-t border-cb-line px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] hidden">
     <div class="max-w-4xl mx-auto">
       <div id="pre-finish-buttons" class="flex gap-2">
         <button onclick="resetChecklist()" class="btn-secondary">Limpar</button>
@@ -1435,11 +1389,17 @@
     let legacyUsers = [];     // usuários do login antigo (app_config/main.users), só para o admin migrar
     let unsubscribers = [];
 
+    // Aceita os estados antigos com emoji ("🟢 ...") e os novos ("ok", "warn"...).
     function updateSyncUI(status, text) {
-      const ind = document.getElementById("sync-indicator");
-      const time = document.getElementById("sync-time");
-      if (ind) ind.innerText = status;
-      if (time) time.innerText = text;
+      const s = String(status || "");
+      const state = /🟢|^ok$/.test(s) ? "ok" : /🔴|^error$/.test(s) ? "error" : /🟡|^warn$/.test(s) ? "warn" : /⚪|^off$/.test(s) ? "off" : "wait";
+      const label = { ok: "Sincronizado", error: "Erro de sincronização", warn: "Offline", off: "Desconectado", wait: "Conectando" }[state];
+      const colors = { ok: "bg-emerald-500", warn: "bg-amber-500", error: "bg-rose-600", off: "bg-stone-300", wait: "bg-stone-300" };
+      const dot = document.getElementById("sync-dot");
+      if (!dot) return;
+      dot.className = `w-2 h-2 rounded-full ${colors[state]}`;
+      document.getElementById("sync-text").innerText = label;
+      document.getElementById("sync-pill").title = text ? `${label} · ${text}` : label;
     }
 
     function onListenError(what, err) {
@@ -1569,10 +1529,14 @@
 
     function triggerUndoToast(desc, type, data) {
       lastDeletedItem = { type, data };
-      document.getElementById("undo-text").innerText = `${desc} excluído.`;
-      const toast = document.getElementById("undo-toast");
-      toast.classList.remove("hidden");
-      setTimeout(() => { toast.classList.add("hidden"); }, 7000);
+      const root = document.getElementById("toast-root");
+      const el = document.createElement("div");
+      el.className = "toast pointer-events-auto rounded-2xl shadow-float px-4 py-3 flex items-center gap-3 text-sm font-semibold bg-stone-900 text-white";
+      el.innerHTML = `${icon("trash", "w-5 h-5 shrink-0")}<span class="flex-1">${esc(desc)} movido para a lixeira.</span><button class="font-extrabold text-emerald-300 uppercase text-xs tracking-wider">Desfazer</button>`;
+      el.querySelector("button").onclick = () => { el.remove(); executeUndo(); };
+      root.appendChild(el);
+      clearTimeout(window.__undoTimer);
+      window.__undoTimer = setTimeout(() => el.remove(), 7000);
     }
 
     function executeUndo() {
@@ -1594,26 +1558,15 @@
           renderCentralizedActions();
         }
       }
-      document.getElementById("undo-toast").classList.add("hidden");
       lastDeletedItem = null;
       renderHistoryList();
       renderDailySchedule();
-      alert("Ação desfeita com sucesso!");
+      toast("Ação desfeita.", "success");
     }
 
-    function toggleSidebar() {
-      const sidebar = document.getElementById("sidebar");
-      const backdrop = document.getElementById("sidebar-backdrop");
-      sidebar.classList.toggle("-translate-x-full");
-      backdrop.classList.toggle("hidden");
-    }
+    function toggleSidebar() {}
 
-    function updateLogos() {
-      document.getElementById("login-logo-img").src = DEFAULT_EMBEDDED_LOGO;
-      document.getElementById("header-logo-img").src = DEFAULT_EMBEDDED_LOGO;
-      const modLogo = document.getElementById("modules-logo-img");
-      if (modLogo) modLogo.src = DEFAULT_EMBEDDED_LOGO;
-    }
+    function updateLogos() {}
 
     function getAllowedUnits() {
       if (!currentUser || currentUser.role === 'admin' || !currentUser.units || currentUser.units.length === 0) {
@@ -1702,13 +1655,14 @@
     function renderAdminStatusList() {
       const container = document.getElementById("admin-status-list");
       if (!container) return;
-      container.innerHTML = "";
-      actionStatuses.forEach((st, idx) => {
-        const item = document.createElement("div");
-        item.className = "flex justify-between items-center p-2 bg-stone-50 rounded border text-xs";
-        item.innerHTML = `<span class="font-bold px-2 py-0.5 rounded border ${st.color}">${st.name}</span>${st.name !== 'Concluído' && st.name !== 'Pendente' ? `<button onclick="adminDeleteStatus(${idx})" class="text-rose-600 font-bold">Excluir</button>` : '<span class="text-[10px] text-stone-400">Padrão</span>'}`;
-        container.appendChild(item);
-      });
+      container.innerHTML = actionStatuses.map((st, idx) => `
+        <div class="card px-4 h-14 flex items-center gap-3">
+          <span class="chip border ${esc(st.color)}">${esc(st.name)}</span>
+          <span class="flex-1"></span>
+          ${st.name !== 'Concluído' && st.name !== 'Pendente'
+            ? `<button onclick="adminDeleteStatus(${idx})" class="icon-btn !w-9 !h-9 !text-rose-600" aria-label="Excluir">${icon("trash", "w-4 h-4")}</button>`
+            : `<span class="text-xs text-stone-400">Padrão</span>`}
+        </div>`).join("");
     }
 
     function adminAddNewPriority() {
@@ -1734,80 +1688,43 @@
     function renderAdminPrioritiesList() {
       const container = document.getElementById("admin-priorities-list");
       if (!container) return;
-      container.innerHTML = "";
-      actionPriorities.forEach((pr, idx) => {
-        const item = document.createElement("div");
-        item.className = "flex justify-between items-center p-2 bg-stone-50 rounded border text-xs";
-        item.innerHTML = `<span class="font-bold px-2 py-0.5 rounded ${pr.style}">${pr.name}</span><button onclick="adminDeletePriority(${idx})" class="text-rose-600 font-bold">Excluir</button>`;
-        container.appendChild(item);
-      });
+      container.innerHTML = actionPriorities.map((pr, idx) => `
+        <div class="card px-4 h-14 flex items-center gap-3">
+          <span class="chip ${esc(pr.style)}">${esc(pr.name)}</span>
+          <span class="flex-1"></span>
+          <button onclick="adminDeletePriority(${idx})" class="icon-btn !w-9 !h-9 !text-rose-600" aria-label="Excluir">${icon("trash", "w-4 h-4")}</button>
+        </div>`).join("");
     }
 
 
-    function openModulesScreen() {
-      document.getElementById("modules-screen").classList.remove("hidden");
-      document.getElementById("current-user-badge").innerText = currentUser ? currentUser.name : '';
-      updateLogos();
-
-      const grid = document.getElementById("modules-grid");
-      grid.innerHTML = "";
-
-      if (currentUser.role === 'admin' || currentUser.role === 'gerente') {
-        grid.innerHTML += `
-          <button onclick="selectModule('checklists')" class="p-3.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl transition shadow-sm text-center block w-full">
-            <h3 class="font-bold text-cb-bordo text-xs uppercase tracking-wider">Checklists</h3>
-            <p class="text-[11px] text-stone-500 mt-0.5">Realizar auditorias e rotinas agendadas</p>
-          </button>
-          <button onclick="selectModule('actions')" class="p-3.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl transition shadow-sm text-center block w-full">
-            <h3 class="font-bold text-amber-900 text-xs uppercase tracking-wider">Planos de Ação</h3>
-            <p class="text-[11px] text-stone-500 mt-0.5">Acompanhamento e chat de correções</p>
-          </button>
-          <button onclick="selectModule('technicians')" class="p-3.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl transition shadow-sm text-center block w-full">
-            <h3 class="font-bold text-cb-bordo text-xs uppercase tracking-wider">Manutenção & Garantias</h3>
-            <p class="text-[11px] text-stone-500 mt-0.5">Prestadores de serviço e equipamentos</p>
-          </button>`;
-      } else if (currentUser.role === 'operador') {
-        grid.innerHTML += `
-          <button onclick="selectModule('checklists')" class="p-3.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl transition shadow-sm text-center block w-full">
-            <h3 class="font-bold text-cb-bordo text-xs uppercase tracking-wider">Checklists</h3>
-            <p class="text-[11px] text-stone-500 mt-0.5">Realizar auditorias e rotinas agendadas</p>
-          </button>`;
-      }
-
-      if (currentUser.role === 'admin') {
-        grid.innerHTML += `
-          <button onclick="toggleUsersModal()" class="p-3.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl transition shadow-sm text-center block w-full">
-            <h3 class="font-bold text-stone-900 text-xs uppercase tracking-wider">Gerenciar Unidades & Usuários</h3>
-            <p class="text-[11px] text-stone-500 mt-0.5">Lojas da rede e permissões</p>
-          </button>`;
-      }
-    }
+    // A antiga tela de módulos virou o menu lateral / inferior: entrar leva ao Início.
+    function openModulesScreen() { go("home"); }
 
     // Mostra um dos três módulos (checklists, planos, manutenção) e esconde os outros.
     function showModuleContainer(mod) {
-      document.getElementById("modules-screen").classList.add("hidden");
       const containers = {
         checklists: document.getElementById("module-checklists-container"),
         actions: document.getElementById("module-actions-container"),
         technicians: document.getElementById("module-technicians-container")
       };
-      const labels = { checklists: "Checklists", actions: "Planos de Ação", technicians: "Manutenção" };
       Object.entries(containers).forEach(([key, el]) => el.classList.toggle("hidden", key !== mod));
       document.getElementById("audit-footer").classList.add("hidden");
-      document.getElementById("current-module-badge").innerText = labels[mod] || "";
-      document.getElementById("sidebar-btn-users")?.classList.toggle("hidden", !isAdmin());
-      document.getElementById("sidebar-btn-models")?.classList.toggle("hidden", !isManager());
+      document.getElementById("bottom-nav").classList.remove("hidden");
     }
 
     function selectModule(mod) {
       if (mod === 'users') { toggleUsersModal(); return; }
       if (!currentUser) return;
       if (mod === 'checklists') return go('home');
-      if (mod === 'actions' && currentUser.role === 'operador') return toast("Acesso não autorizado para operadores.", "warn");
+      if (mod === 'actions' && !isManager()) return toast("Área restrita a gerentes e administradores.", "warn");
       if (isAuditFinished) { isAuditFinished = false; setAuditInputsDisabled(false); }
       showModuleContainer(mod);
+      currentView = mod === 'actions' ? 'actions' : 'maintenance';
+      setTopbarTitle();
+      window.scrollTo({ top: 0 });
       if (mod === 'actions') renderCentralizedActions();
       else if (mod === 'technicians') renderTechniciansList();
+      renderNavigation();
     }
 
     // Navegação dentro do módulo de checklists: início, execução e relatórios.
@@ -1830,16 +1747,69 @@
 
       const inAudit = view === "audit";
       document.getElementById("audit-footer").classList.toggle("hidden", !inAudit);
-      document.getElementById("cl-subnav").classList.toggle("hidden", inAudit);
-      document.getElementById("cl-tab-home").className = `seg-btn ${view === "home" ? "seg-btn-active" : ""}`;
-      document.getElementById("cl-tab-reports").className = `seg-btn ${view === "reports" ? "seg-btn-active" : ""}`;
-      document.getElementById("cl-btn-models").classList.toggle("hidden", !isManager());
+      document.getElementById("bottom-nav").classList.toggle("hidden", inAudit);
       document.getElementById("btn-reports-trash").classList.toggle("hidden", !isManager());
+      setTopbarTitle();
       window.scrollTo({ top: 0 });
 
       if (view === "home") renderHome();
       else if (view === "audit") updateFooterFinishUI();
       else if (view === "reports") renderHistoryList();
+      renderNavigation();
+    }
+
+    /* ---- Menu lateral (computador) e inferior (celular) ---- */
+    const VIEW_TITLES = { home: "Início", audit: "Checklist", reports: "Relatórios", actions: "Planos de ação", maintenance: "Manutenção" };
+
+    function setTopbarTitle() {
+      const t = document.getElementById("topbar-title");
+      if (t) t.innerText = window.innerWidth >= 768 ? (VIEW_TITLES[currentView] || "Zacan Holding") : "Zacan Holding";
+    }
+    window.addEventListener("resize", () => { if (currentUser) setTopbarTitle(); });
+
+    function navItems() {
+      const items = [
+        { id: "home", label: "Início", icon: "home" },
+        { id: "reports", label: "Relatórios", icon: "folder" }
+      ];
+      if (isManager()) items.push({ id: "actions", label: "Planos", icon: "list" });
+      items.push({ id: "maintenance", label: "Manutenção", icon: "wrench" });
+      return items;
+    }
+
+    function renderNavigation() {
+      if (!currentUser) return;
+      const items = navItems();
+      const navTarget = currentView === "audit" ? "home" : currentView;
+
+      document.getElementById("bottom-nav").innerHTML = items.map(it => `
+        <button onclick="go('${it.id}')" class="flex-1 min-w-0 max-w-[96px] flex flex-col items-center gap-1 py-1 rounded-xl ${navTarget === it.id ? "text-cb-bordo" : "text-stone-500"}" ${navTarget === it.id ? 'aria-current="page"' : ""}>
+          ${icon(it.icon, "w-6 h-6")}
+          <span class="text-[11px] truncate max-w-full ${navTarget === it.id ? "font-extrabold" : "font-semibold"}">${it.label}</span>
+        </button>`).join("");
+
+      const sideBtn = (id, ic, label) => `<button onclick="go('${id}')" class="side-item ${navTarget === id ? "side-item-active" : ""}" ${navTarget === id ? 'aria-current="page"' : ""}>${icon(ic)} ${label}</button>`;
+      const sideHead = (t) => `<div class="pt-4 pb-1 px-3 text-[11px] font-bold uppercase tracking-wider text-white/40">${t}</div>`;
+      const pend = pendingUsers().length;
+      let side = sideBtn("home", "home", "Início");
+      side += sideHead("Checklist") + sideBtn("reports", "folder", "Relatórios");
+      if (isManager()) side += `<button onclick="toggleConfigModal()" class="side-item">${icon("sliders")} Modelos de checklist</button>`;
+      side += sideHead("Operação");
+      if (isManager()) side += sideBtn("actions", "list", "Planos de ação");
+      side += sideBtn("maintenance", "wrench", "Manutenção");
+      if (isAdmin()) side += sideHead("Configurações") + `<button onclick="toggleUsersModal()" class="side-item">${icon("users")} Unidades e usuários ${pend ? `<span class="chip bg-rose-600 text-white ml-auto">${pend}</span>` : ""}</button>`;
+      document.getElementById("side-nav").innerHTML = side;
+    }
+
+    function openProfileModal() {
+      document.getElementById("profile-name").innerText = currentUser.name;
+      document.getElementById("profile-meta").innerText = `${ROLE_LABELS[currentUser.role] || currentUser.role} · ${currentUser.username}`;
+      document.getElementById("profile-avatar").innerText = initials(currentUser.name);
+      let links = "";
+      if (isManager()) links += `<button onclick="closeModal('profile-modal'); toggleConfigModal()" class="nav-item">${icon("sliders")} Modelos de checklist</button>`;
+      if (isAdmin()) links += `<button onclick="closeModal('profile-modal'); toggleUsersModal()" class="nav-item">${icon("users")} Unidades e usuários ${pendingUsers().length ? `<span class="chip bg-rose-600 text-white ml-auto">${pendingUsers().length}</span>` : ""}</button>`;
+      document.getElementById("profile-admin-links").innerHTML = links;
+      openModal("profile-modal");
     }
 
     // Compatibilidade com as chamadas antigas (notificações, menu lateral).
@@ -1849,15 +1819,10 @@
       currentActionsTab = tab;
       selectedActionIds.clear();
       updateSelectedActionsCount();
-      const btnPending = document.getElementById("actions-tab-pending");
-      const btnCompleted = document.getElementById("actions-tab-completed");
-      if (tab === 'pending') {
-        btnPending.className = "flex-1 py-2 border-b-2 border-cb-bordo text-cb-bordo transition";
-        btnCompleted.className = "flex-1 py-2 border-b-2 border-transparent text-stone-400 transition";
-      } else {
-        btnPending.className = "flex-1 py-2 border-b-2 border-transparent text-stone-400 transition";
-        btnCompleted.className = "flex-1 py-2 border-b-2 border-cb-bordo text-cb-bordo transition";
-      }
+      const all = document.getElementById("select-all-actions");
+      if (all) all.checked = false;
+      document.getElementById("actions-tab-pending").className = `seg-btn ${tab === "pending" ? "seg-btn-active" : ""}`;
+      document.getElementById("actions-tab-completed").className = `seg-btn ${tab === "completed" ? "seg-btn-active" : ""}`;
       renderCentralizedActions();
     }
 
@@ -2082,30 +2047,37 @@
     function renderWarrantyList() {
       const container = document.getElementById("warranty-list-container");
       if (!container) return;
-      container.innerHTML = "";
-
       if (warrantyRecords.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-stone-400 text-xs">Nenhum registro de garantia cadastrado até o momento.</div>`;
+        container.innerHTML = `<div class="p-8 text-center text-sm text-stone-400">${icon("shield", "w-10 h-10 mx-auto mb-2 opacity-40")}Nenhuma garantia registrada até o momento.</div>`;
         return;
       }
-
-      warrantyRecords.forEach((w, idx) => {
-        let nfHtml = w.nfUrl ? `<button onclick="openImageViewer('${w.nfUrl}')" class="text-blue-600 font-bold underline">Visualizar NF</button>` : 'Sem NF';
-        const card = document.createElement("div");
-        card.className = "p-3 bg-white border rounded-xl flex justify-between items-center shadow-sm text-xs gap-2 flex-wrap";
-        card.innerHTML = `
-          <div class="space-y-0.5">
-            <span class="font-bold text-cb-bordo text-sm block">🔧 ${w.equipamento} (${w.empresa})</span>
-            <span class="text-stone-600 block">Contato: ${w.contato || 'N/I'} | Conclusão: ${w.dataConclusao}</span>
-            <span class="text-stone-500 block">Valores: Mão de Obra R$ ${Number(w.vMao).toFixed(2)} | Peças R$ ${Number(w.vPecas).toFixed(2)}</span>
-            <span class="font-bold text-emerald-700 block">🛡️ Vigência da Garantia até: ${w.dataGarantiaFim}</span>
-          </div>
-          <div class="flex flex-col items-end gap-1">
-            ${nfHtml}
-            ${currentUser?.role === 'admin' ? `<button onclick="deleteWarrantyRecord(${idx})" class="text-rose-600 font-bold hover:underline">Excluir</button>` : ''}
+      const today = hojeISO();
+      container.innerHTML = warrantyRecords.map((w, idx) => {
+        const endIso = brToISO(w.dataGarantiaFim);
+        const expired = endIso && endIso < today;
+        const nf = safeUrl(w.nfUrl);
+        return `
+          <div class="card p-4 space-y-2">
+            <div class="flex items-start gap-3">
+              <span class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${expired ? "bg-stone-100 text-stone-500" : "bg-emerald-50 text-emerald-700"}">${icon("shield")}</span>
+              <div class="flex-1 min-w-0">
+                <p class="font-bold">${esc(w.equipamento)}</p>
+                <p class="text-sm text-cb-muted">${esc(w.empresa)}</p>
+              </div>
+              <span class="chip ${expired ? "bg-stone-100 text-stone-600" : "bg-emerald-100 text-emerald-800"}">${expired ? "Vencida" : "Vigente"} até ${esc(w.dataGarantiaFim)}</span>
+            </div>
+            <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-600 pl-14">
+              <span>Conclusão: ${esc(w.dataConclusao)}</span>
+              <span>Mão de obra: R$ ${Number(w.vMao || 0).toFixed(2).replace(".", ",")}</span>
+              <span>Peças: R$ ${Number(w.vPecas || 0).toFixed(2).replace(".", ",")}</span>
+              ${w.contato ? `<span>Contato: ${esc(w.contato)}</span>` : ""}
+            </div>
+            <div class="flex gap-2 pl-14">
+              ${nf ? `<button data-view="${esc(nf)}" class="btn-soft btn-sm">${icon("file", "w-4 h-4")} Nota fiscal</button>` : `<span class="text-xs text-stone-400 self-center">Sem nota fiscal</span>`}
+              ${isAdmin() ? `<button onclick="deleteWarrantyRecord(${idx})" class="btn-secondary btn-sm !text-rose-700 ml-auto">Excluir</button>` : ""}
+            </div>
           </div>`;
-        container.appendChild(card);
-      });
+      }).join("");
     }
 
     function deleteWarrantyRecord(idx) {
@@ -2255,29 +2227,21 @@
       const container = document.getElementById("trash-actions-list");
       const countEl = document.getElementById("trash-count");
       if (!container) return;
-      container.innerHTML = "";
       if (countEl) countEl.innerText = trashActionsList.length;
-
       if (trashActionsList.length === 0) {
-        container.innerHTML = `<div class="p-6 text-center text-stone-400 text-xs">A lixeira está vazia.</div>`;
+        container.innerHTML = `<div class="p-8 text-center text-sm text-stone-400">A lixeira está vazia.</div>`;
         return;
       }
-
-      trashActionsList.forEach((item, idx) => {
-        const div = document.createElement("div");
-        div.className = "p-3 bg-white border rounded-xl flex justify-between items-center shadow-sm text-xs gap-2";
-        div.innerHTML = `
-          <div>
-            <span class="font-bold text-cb-bordo block">${item.unit || 'Loja'} — ${item.title || item.equipment || 'Ação'}</span>
-            <span class="text-stone-500">${item.action || item.defect || ''}</span>
+      container.innerHTML = trashActionsList.map((item, idx) => `
+        <div class="card p-4 flex items-center gap-3">
+          <div class="flex-1 min-w-0">
+            <p class="text-[11px] font-extrabold uppercase text-cb-bordo">${esc(item.unit || "Loja")}</p>
+            <p class="font-bold truncate">${esc(item.title || item.equipment || "Ação")}</p>
+            <p class="text-xs text-cb-muted truncate">${esc(item.action || item.defect || "")}</p>
           </div>
-          <div class="flex gap-2">
-            <button onclick="restoreActionFromTrash(${idx})" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded shadow-sm">Restaurar</button>
-            <button onclick="permanentDeleteAction(${idx})" class="px-2 py-1.5 bg-rose-600 text-white font-bold rounded shadow-sm">Excluir Definitivo</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
+          <button onclick="restoreActionFromTrash(${idx})" class="btn-soft btn-sm">Restaurar</button>
+          <button onclick="permanentDeleteAction(${idx})" class="icon-btn !w-9 !h-9 !text-rose-600" aria-label="Excluir definitivamente">${icon("trash", "w-4 h-4")}</button>
+        </div>`).join("");
     }
 
     function permanentDeleteAction(idx) {
@@ -2356,84 +2320,66 @@
     }
 
     function updateNotificationBadgeCount() {
-      let unreadList = getActiveNotifications();
-      let unreadCount = unreadList.length;
-
+      const count = getActiveNotifications().length;
       const badge = document.getElementById("global-notification-dot");
-      if (badge) {
-        if (unreadCount > 0) {
-          badge.innerText = unreadCount;
-          badge.classList.remove("hidden");
-        } else {
-          badge.classList.add("hidden");
-        }
-      }
+      if (!badge) return;
+      badge.innerText = count > 99 ? "99+" : count;
+      badge.classList.toggle("hidden", count === 0);
+      badge.classList.toggle("flex", count > 0);
     }
 
     function toggleNotificationDropdown(event) {
       event.stopPropagation();
       const dropdown = document.getElementById("notification-dropdown");
-      const listContainer = document.getElementById("notification-list");
-      const countBadge = document.getElementById("notif-count-badge");
-
       dropdown.classList.toggle("hidden");
-      if (!dropdown.classList.contains("hidden")) {
-        listContainer.innerHTML = "";
-        let unreadList = getActiveNotifications();
-        countBadge.innerText = unreadList.length;
+      if (dropdown.classList.contains("hidden")) return;
 
-        if (unreadList.length === 0) {
-          listContainer.innerHTML = `<div class="p-4 text-center text-stone-400 text-xs">Nenhuma notificação nova.</div>`;
-          return;
-        }
-
-        unreadList.forEach(item => {
-          const div = document.createElement("div");
-          div.className = "p-2.5 hover:bg-stone-50 cursor-pointer transition space-y-0.5";
-          div.onclick = () => {
-            if (item.type === 'chat_msg') {
-              delete unreadChatMessages[item.chatId];
-              localStorage.setItem("BG_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
-            } else {
-              readNotifications[item.id] = true;
-              localStorage.setItem("BG_READ_NOTIFICATIONS", JSON.stringify(readNotifications));
-            }
-            updateNotificationBadgeCount();
-            dropdown.classList.add("hidden");
-
-            if (item.type === 'report') {
-              selectModule('checklists');
-              switchChecklistTab('history');
-            } else {
-              selectModule('actions');
-              openChatModal(item.chatId, item.reportId, item.actionType, item.index, item.isManual);
-            }
-          };
-          div.innerHTML = `
-            <div class="font-bold text-cb-bordo uppercase text-[11px]">${item.unit}</div>
-            <div class="text-stone-700 font-semibold truncate">${item.title}</div>
-            <div class="text-[10px] text-stone-400">${item.desc}</div>
-          `;
-          listContainer.appendChild(div);
-        });
+      const list = document.getElementById("notification-list");
+      const notifs = getActiveNotifications();
+      document.getElementById("notif-count-badge").innerText = notifs.length;
+      if (notifs.length === 0) {
+        list.innerHTML = `<div class="p-8 text-center text-sm text-stone-400">${icon("bell", "w-8 h-8 mx-auto mb-2 opacity-40")}Nenhuma notificação nova.</div>`;
+        return;
       }
+      list.innerHTML = "";
+      notifs.forEach(item => {
+        const isChat = item.type === 'chat_msg';
+        const btn = document.createElement("button");
+        btn.className = "w-full text-left px-4 py-3 hover:bg-stone-50 flex gap-3";
+        btn.innerHTML = `
+          <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isChat ? "bg-sky-100 text-sky-800" : "bg-cb-soft text-cb-bordo"}">${icon(isChat ? "message" : "folder", "w-4 h-4")}</span>
+          <span class="min-w-0">
+            <span class="block text-[11px] font-bold uppercase tracking-wide text-stone-400">${esc(item.unit)}</span>
+            <span class="block text-sm font-bold truncate">${esc(item.title)}</span>
+            <span class="block text-xs text-stone-500 truncate">${esc(item.desc)}</span>
+          </span>`;
+        btn.onclick = () => {
+          if (isChat) {
+            delete unreadChatMessages[item.chatId];
+            localStorage.setItem("BG_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
+          } else {
+            readNotifications[item.id] = true;
+            localStorage.setItem("BG_READ_NOTIFICATIONS", JSON.stringify(readNotifications));
+          }
+          updateNotificationBadgeCount();
+          dropdown.classList.add("hidden");
+          if (item.type === 'report') go('reports');
+          else { selectModule('actions'); openChatModal(item.chatId, item.reportId, item.actionType, item.index, item.isManual); }
+        };
+        list.appendChild(btn);
+      });
     }
 
     function clearAllNotifications(event) {
       event.stopPropagation();
-      let unreadList = getActiveNotifications();
-      unreadList.forEach(item => {
-        if (item.type === 'chat_msg') {
-          delete unreadChatMessages[item.chatId];
-        } else {
-          readNotifications[item.id] = true;
-        }
+      getActiveNotifications().forEach(item => {
+        if (item.type === 'chat_msg') delete unreadChatMessages[item.chatId];
+        else readNotifications[item.id] = true;
       });
       localStorage.setItem("BG_READ_NOTIFICATIONS", JSON.stringify(readNotifications));
       localStorage.setItem("BG_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
       updateNotificationBadgeCount();
       document.getElementById("notification-dropdown").classList.add("hidden");
-      alert("Todas as notificações foram limpas!");
     }
 
     window.onclick = function(event) {
@@ -2579,124 +2525,102 @@
 
     function renderCentralizedActions() {
       const container = document.getElementById("centralized-actions-list");
-      const trashBtn = document.getElementById("btn-trash-actions");
-      if (trashBtn && currentUser?.role === 'admin') {
-        trashBtn.classList.remove("hidden");
-        document.getElementById("trash-count").innerText = trashActionsList.length;
-      }
+      if (!container || !currentUser) return;
+      document.getElementById("trash-count").innerText = trashActionsList.length;
 
-      if (!container) return;
-      container.innerHTML = "";
+      // Filtros de status e tarja com as opções cadastradas.
+      const stSel = document.getElementById("filter-status");
+      const prSel = document.getElementById("filter-priority");
+      const stVal = stSel.value, prVal = prSel.value;
+      stSel.innerHTML = `<option value="">Todos</option>` + actionStatuses.map(s => `<option value="${esc(s.name)}">${esc(s.name)}</option>`).join("");
+      prSel.innerHTML = `<option value="">Todas</option>` + actionPriorities.map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("");
+      if (actionStatuses.some(s => s.name === stVal)) stSel.value = stVal;
+      if (actionPriorities.some(p => p.name === prVal)) prSel.value = prVal;
+
       const allowedUnits = getAllowedUnits();
       const storeFilter = document.getElementById("filter-action-store")?.value || "";
-
-      let counts = { pending: 0, progress: 0, completed: 0 };
-
+      const counts = { pending: 0, progress: 0, completed: 0 };
+      const countStatus = (s) => {
+        s = String(s || "").toLowerCase();
+        if (s.includes('concluído')) counts.completed++;
+        else if (s.includes('andamento')) counts.progress++;
+        else counts.pending++;
+      };
       savedReports.forEach(rep => {
         if (!allowedUnits.includes(rep.unit)) return;
-        let storeMatch = !storeFilter || rep.unit === storeFilter;
-        if (!storeMatch) return;
-
-        rep.nonConformities?.forEach((nc, i) => {
-          let s = actionCustomStatus[`${rep.id}_nc_${i}`] || 'Pendente';
-          if (s.toLowerCase().includes('concluído')) counts.completed++;
-          else if (s.toLowerCase().includes('andamento')) counts.progress++;
-          else counts.pending++;
-        });
-
-        rep.maintenanceOrders?.forEach((om, i) => {
-          let s = actionCustomStatus[`${rep.id}_om_${i}`] || 'Pendente';
-          if (s.toLowerCase().includes('concluído')) counts.completed++;
-          else if (s.toLowerCase().includes('andamento')) counts.progress++;
-          else counts.pending++;
-        });
+        if (storeFilter && rep.unit !== storeFilter) return;
+        rep.nonConformities?.forEach((nc, i) => countStatus(actionCustomStatus[`${rep.id}_nc_${i}`] || 'Pendente'));
+        rep.maintenanceOrders?.forEach((om, i) => countStatus(actionCustomStatus[`${rep.id}_om_${i}`] || 'Pendente'));
       });
-
       manualActionsList.forEach(act => {
         if (!allowedUnits.includes(act.unit)) return;
-        let storeMatch = !storeFilter || act.unit === storeFilter;
-        if (!storeMatch) return;
-
-        let s = actionCustomStatus[act.id] || 'Pendente';
-        if (s.toLowerCase().includes('concluído')) counts.completed++;
-        else if (s.toLowerCase().includes('andamento')) counts.progress++;
-        else counts.pending++;
+        if (storeFilter && act.unit !== storeFilter) return;
+        countStatus(actionCustomStatus[act.id] || 'Pendente');
       });
-
       document.getElementById("counter-pending").innerText = counts.pending;
       document.getElementById("counter-progress").innerText = counts.progress;
       document.getElementById("counter-completed").innerText = counts.completed;
 
-      let filteredActions = getFilteredActionsList();
-
-      filteredActions.sort((a, b) => {
-        let parseDate = (d) => {
-          if (!d || d === 'Indefinida' || d === 'Não definida') return new Date('2099-12-31');
-          if (d.includes('-')) return new Date(d);
-          if (d.includes('/')) return new Date(d.split('/').reverse().join('-'));
-          return new Date('2099-12-31');
-        };
-        return parseDate(a.rawDate || a.date) - parseDate(b.rawDate || b.date);
-      });
+      const filteredActions = getFilteredActionsList();
+      const parseDate = (d) => {
+        if (!d || d === 'Indefinida' || d === 'Não definida') return '2099-12-31';
+        return brToISO(d) || '2099-12-31';
+      };
+      filteredActions.sort((a, b) => parseDate(a.rawDate || a.date).localeCompare(parseDate(b.rawDate || b.date)));
 
       if (filteredActions.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center bg-white rounded-xl border text-stone-400 text-xs">Nenhum plano de ação encontrado nesta aba/filtro.</div>`;
+        container.innerHTML = `
+          <div class="card p-8 text-center">
+            <span class="w-14 h-14 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center mx-auto mb-3">${icon("list", "w-7 h-7")}</span>
+            <p class="font-bold">Nenhum plano encontrado</p>
+            <p class="text-sm text-cb-muted">Não há planos nesta aba com os filtros atuais.</p>
+          </div>`;
+        listenToAllChats();
         return;
       }
 
-      filteredActions.forEach(act => {
-        let atrasoHtml = "";
-        let isDone = act.status.toLowerCase().includes('concluído');
-        if (!isDone && act.rawDate && act.rawDate !== 'Indefinida' && act.rawDate !== 'Não definida') {
-          let parts = act.rawDate.includes('-') ? act.rawDate.split('-') : act.rawDate.split('/').reverse();
-          let dueIso = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
-          let todayIso = new Date().toISOString().split('T')[0];
-          if (dueIso < todayIso) {
-            let diffTime = Math.abs(new Date(todayIso) - new Date(dueIso));
-            let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            atrasoHtml = `<span class="bg-rose-100 text-rose-800 font-bold px-1.5 py-0.5 rounded text-[10px]">⚠️ ${diffDays}d atraso</span>`;
-          }
-        }
+      const today = hojeISO();
+      const typeInfo = { nc: ["Não conformidade", "alert"], om: ["Manutenção", "wrench"], avulso: ["Avulso", "list"] };
+      container.innerHTML = filteredActions.map(act => {
+        const cid = jsId(act.chatId);
+        const isDone = String(act.status).toLowerCase().includes('concluído');
+        const due = parseDate(act.rawDate || act.date);
+        const late = !isDone && due !== '2099-12-31' && due < today;
+        const lateDays = late ? Math.round((new Date(today + "T00:00:00") - new Date(due + "T00:00:00")) / 86400000) : 0;
+        const [typeLabel, typeIcon] = typeInfo[act.type] || typeInfo.avulso;
+        const statusObj = actionStatuses.find(s => s.name === act.status) || { color: "bg-stone-100 border-stone-300" };
+        const priorityObj = actionPriorities.find(p => p.name === act.priority) || { style: "bg-stone-200 text-stone-800" };
+        const statusOptions = actionStatuses.map(s => `<option value="${esc(s.name)}" ${act.status === s.name ? "selected" : ""}>${esc(s.name)}</option>`).join("")
+          + (actionStatuses.some(s => s.name === act.status) ? "" : `<option selected>${esc(act.status || "Pendente")}</option>`);
+        const priorityOptions = actionPriorities.map(p => `<option value="${esc(p.name)}" ${act.priority === p.name ? "selected" : ""}>${esc(p.name)}</option>`).join("");
+        const selected = selectedActionIds.has(act.chatId);
 
-        let statusOptions = actionStatuses.map(st => `<option value="${st.name}" ${act.status === st.name ? 'selected' : ''}>${st.name}</option>`).join("");
-        let currentStatusObj = actionStatuses.find(s => s.name === act.status) || { color: 'bg-white border-stone-200' };
-
-        let priorityOptions = actionPriorities.map(pr => `<option value="${pr.name}" ${act.priority === pr.name ? 'selected' : ''}>${pr.name}</option>`).join("");
-        let currentPriorityObj = actionPriorities.find(p => p.name === act.priority) || { style: 'bg-stone-200 text-stone-800 font-semibold' };
-
-        let adminDeleteBtn = currentUser?.role === 'admin' ? `
-          <button onclick="deleteActionPlan('${act.chatId}', '${act.fullReportId}', '${act.type}', ${act.index}, ${act.isManual})" class="text-rose-600 hover:text-rose-800 p-1 font-bold" title="Excluir Plano de Ação">🗑️</button>
-        ` : '';
-
-        const card = document.createElement("div");
-        card.className = `p-4 rounded-xl border shadow-sm flex flex-col gap-2.5 text-xs ${currentStatusObj.color}`;
-        card.innerHTML = `
-          <div class="flex items-center justify-between gap-2 flex-wrap">
+        return `
+          <div class="card p-4 space-y-3 ${selected ? "ring-2 ring-cb-bordo/40" : ""}">
+            <div class="flex items-start gap-3">
+              <input type="checkbox" value="${cid}" ${selected ? "checked" : ""} onchange="toggleActionSelection('${cid}')" class="action-select-item w-5 h-5 mt-0.5 rounded accent-[#1B5E20] shrink-0" aria-label="Selecionar plano">
+              <div class="flex-1 min-w-0 space-y-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-xs font-extrabold uppercase tracking-wide text-cb-bordo">${esc(act.unit)}</span>
+                  <span class="chip bg-stone-100 text-stone-600">${icon(typeIcon, "w-3 h-3")} ${typeLabel}</span>
+                  ${late ? `<span class="chip bg-rose-100 text-rose-700">${icon("clock", "w-3 h-3")} ${lateDays}d de atraso</span>` : ""}
+                </div>
+                <p class="font-bold leading-snug">${esc(act.title)}</p>
+                <p class="text-sm text-cb-muted leading-snug">${esc(act.action)}</p>
+              </div>
+              ${isAdmin() ? `<button onclick="deleteActionPlan('${cid}', '${jsId(act.fullReportId)}', '${act.type}', ${act.index}, ${act.isManual})" class="icon-btn !w-9 !h-9 -mr-1 -mt-1 text-stone-400 hover:!text-rose-600" aria-label="Excluir plano">${icon("trash", "w-4 h-4")}</button>` : ""}
+            </div>
             <div class="flex items-center gap-2 flex-wrap">
-              <input type="checkbox" value="${act.chatId}" ${selectedActionIds.has(act.chatId) ? 'checked' : ''} onchange="toggleActionSelection('${act.chatId}')" class="action-select-item rounded text-cb-bordo focus:ring-0">
-              <span class="font-bold text-sm text-cb-bordo uppercase">${act.unit}</span>
-              <span class="text-stone-500 font-medium">📅 ${act.date}</span>
-              <select onchange="updateActionPriority('${act.chatId}', this.value)" class="border rounded px-2 py-0.5 text-[10px] ${currentPriorityObj.style} focus:outline-none cursor-pointer">
-                ${priorityOptions}
-              </select>
-              ${atrasoHtml}
-            </div>
-            <div class="flex items-center gap-2">
-              <select onchange="updateActionStatus('${act.chatId}', this.value, '${act.type}')" class="border rounded px-2.5 py-1 text-xs font-bold bg-white shadow-sm cursor-pointer">
-                ${statusOptions}
-              </select>
-              <button id="btn-chat-${act.chatId}" onclick="openChatModal('${act.chatId}', '${act.fullReportId}', '${act.type}', ${act.index}, ${act.isManual ? 'true' : 'false'})" class="relative px-3 py-1 bg-white text-cb-bordo font-bold rounded shadow-sm border border-stone-200 hover:bg-stone-50 transition">
-                💬 Chat & Detalhes
-                <span id="chat-dot-${act.chatId}" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white hidden"></span>
+              <span class="chip bg-stone-100 text-stone-600">${icon("calendar", "w-3 h-3")} ${esc(act.date)}</span>
+              <select onchange="updateActionPriority('${cid}', this.value)" class="h-7 rounded-full px-2.5 text-[11px] font-bold border-0 cursor-pointer ${esc(priorityObj.style)}" aria-label="Tarja">${priorityOptions}</select>
+              <select onchange="updateActionStatus('${cid}', this.value, '${act.type}')" class="h-9 rounded-xl px-3 text-xs font-bold border cursor-pointer ${esc(statusObj.color)}" aria-label="Status">${statusOptions}</select>
+              <button id="btn-chat-${cid}" onclick="openChatModal('${cid}', '${jsId(act.fullReportId)}', '${act.type}', ${act.index}, ${act.isManual ? 'true' : 'false'})" class="btn-secondary btn-sm ml-auto relative">
+                ${icon("message", "w-4 h-4")} Conversa
+                <span id="chat-dot-${cid}" class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-600 border-2 border-white ${unreadChatMessages[act.chatId] ? "" : "hidden"}"></span>
               </button>
-              ${adminDeleteBtn}
             </div>
-          </div>
-          <div class="text-stone-800 text-sm leading-relaxed pt-1 border-t border-stone-200/60">
-            <strong>${act.title}</strong> — <span class="text-stone-700">${act.action}</span>
           </div>`;
-        container.appendChild(card);
-      });
+      }).join("");
 
       listenToAllChats();
     }
@@ -2708,58 +2632,36 @@
         localStorage.setItem("BG_UNREAD_CHAT_MSGS", JSON.stringify(unreadChatMessages));
         updateNotificationBadgeCount();
       }
-
-      const detailsContainer = document.getElementById("chat-action-details");
-      detailsContainer.innerHTML = "";
-
-      let orientacaoManutencao = (type === 'om') ? `
-        <div class="p-2.5 bg-amber-100 border border-amber-300 rounded-lg text-amber-900 font-bold flex items-center gap-2">
-          <span>⚠️ <strong>Atenção:</strong> Fazer 3 orçamentos e enviar para aprovação.</span>
-        </div>` : '';
-
-      let photoUrlDisplay = '';
-      if (isManual) {
-        const manualAct = manualActionsList.find(a => a.id === chatId);
-        if (manualAct) {
-          document.getElementById("chat-modal-title").innerText = manualAct.title;
-          document.getElementById("chat-modal-subtitle").innerText = `${manualAct.unit} • Prazo: ${manualAct.date}`;
-          if (manualAct.photoUrl) {
-            photoUrlDisplay = `<div class="mt-2"><span class="block font-bold mb-1">Foto anexada:</span><img src="${manualAct.photoUrl}" onclick="openImageViewer('${manualAct.photoUrl}')" class="h-28 w-auto rounded-lg border object-cover cursor-pointer hover:opacity-90"></div>`;
-          }
-          detailsContainer.innerHTML = `
-            ${orientacaoManutencao}
-            <div><strong>Descrição / Ação:</strong> ${manualAct.action}</div>
-            ${photoUrlDisplay}
-          `;
-        }
+      const status = actionCustomStatus[chatId] || "Pendente";
+      let title = "Plano de ação", unit = "", due = "", action = "", sector = "", photos = [];
+      if (isManual === true || isManual === "true") {
+        const a = manualActionsList.find(x => x.id === chatId);
+        if (a) { title = a.title; unit = a.unit; due = a.date; action = a.action; if (a.photoUrl) photos = [a.photoUrl]; }
       } else {
         const rep = savedReports.find(r => r.id === reportId);
-        if (rep) {
-          let itemData = type === 'nc' ? rep.nonConformities?.[index] : rep.maintenanceOrders?.[index];
-          if (itemData) {
-            document.getElementById("chat-modal-title").innerText = type === 'nc' ? itemData.title : `Manutenção: ${itemData.equipment}`;
-            document.getElementById("chat-modal-subtitle").innerText = `${rep.unit} • Prazo: ${itemData.date}`;
-
-            if (itemData.photoUrl) {
-              photoUrlDisplay = `<div class="mt-2"><span class="block font-bold mb-1">Foto anexada no Checklist:</span><img src="${itemData.photoUrl}" onclick="openImageViewer('${itemData.photoUrl}')" class="h-28 w-auto rounded-lg border object-cover cursor-pointer hover:opacity-90"></div>`;
-            }
-
-            detailsContainer.innerHTML = `
-              ${orientacaoManutencao}
-              <div><strong>Descrição / Ação:</strong> ${itemData.action || itemData.defect || 'Não especificada'}</div>
-              ${photoUrlDisplay}
-            `;
-          }
+        const item = rep && (type === 'nc' ? rep.nonConformities?.[index] : rep.maintenanceOrders?.[index]);
+        if (item) {
+          title = type === 'nc' ? item.title : `Manutenção: ${item.equipment}`;
+          unit = rep.unit; due = item.date; action = item.action || item.defect || "Não especificada"; sector = item.sector || "";
+          photos = item.photos || (item.photoUrl ? [item.photoUrl] : []);
         }
       }
-
-      document.getElementById("chat-modal").classList.remove("hidden");
+      document.getElementById("chat-modal-title").innerText = title;
+      document.getElementById("chat-modal-subtitle").innerText = `${unit} · prazo ${due || "Não definida"} · ${status}`;
+      const thumbs = photos.map(ref => imgTag(ref, "w-20 h-20 rounded-xl object-cover cursor-zoom-in", "Foto do plano")).join("");
+      document.getElementById("chat-action-details").innerHTML = `
+        ${type === "om" ? `<div class="rounded-xl bg-amber-100 text-amber-950 p-3 text-xs font-bold flex gap-2">${icon("alert", "w-4 h-4 shrink-0")} Fazer 3 orçamentos e enviar para aprovação.</div>` : ""}
+        <p><span class="font-bold">Ação:</span> ${esc(action || "Não especificada")}</p>
+        ${sector ? `<p class="text-xs text-cb-muted">Setor: ${esc(sector)}</p>` : ""}
+        ${thumbs ? `<div class="flex gap-2 flex-wrap">${thumbs}</div>` : ""}`;
+      openModal("chat-modal");
       loadChatMessages(chatId);
       document.getElementById(`chat-dot-${chatId}`)?.classList.add("hidden");
     }
 
     function toggleChatModal() {
-      document.getElementById("chat-modal").classList.add("hidden");
+      closeModal("chat-modal");
+      if (window.__unsubChat) { window.__unsubChat(); window.__unsubChat = null; }
       activeChatActionId = null;
       renderCentralizedActions();
     }
@@ -2791,48 +2693,41 @@
 
     function loadChatMessages(chatId) {
       if (!isFirebaseReady) return;
-      db.collection("chats").doc(chatId).collection("messages").orderBy("createdAt", "asc").onSnapshot(snapshot => {
-        const container = document.getElementById("chat-messages-container");
-        container.innerHTML = "";
-
+      if (window.__unsubChat) { window.__unsubChat(); window.__unsubChat = null; }
+      const container = document.getElementById("chat-messages-container");
+      container.innerHTML = `<div class="text-center text-stone-400 py-8">Carregando mensagens...</div>`;
+      window.__unsubChat = db.collection("chats").doc(chatId).collection("messages").orderBy("createdAt", "asc").onSnapshot(snapshot => {
+        if (activeChatActionId !== chatId) return;
         if (snapshot.empty) {
-          container.innerHTML = `<div class="text-center text-stone-400 py-6">Nenhuma mensagem ainda. Inicie a conversa.</div>`;
+          container.innerHTML = `
+            <div class="text-center text-stone-400 py-10">
+              ${icon("message", "w-10 h-10 mx-auto mb-2 opacity-40")}
+              <p class="text-sm">Nenhuma mensagem ainda. Comece a conversa.</p>
+            </div>`;
           return;
         }
-
+        const html = [];
         snapshot.forEach(doc => {
           const m = doc.data();
           const isMe = m.sender === currentUser.name;
-
-          if (!isMe && !m.seen) {
-            db.collection("chats").doc(chatId).collection("messages").doc(doc.id).update({ seen: true });
-          }
-
-          const msgDiv = document.createElement("div");
-          msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
-
-          let bubbleContent = "";
-          if (m.isAttachment) {
-            if (m.fileType === 'image') {
-              bubbleContent = `<img src="${m.text}" onclick="openImageViewer('${m.text}')" class="max-h-40 rounded-lg cursor-pointer border hover:opacity-90 object-cover mb-1"><a href="${m.text}" download="anexo" class="text-[10px] underline block font-bold">Baixar Imagem</a>`;
-            } else {
-              bubbleContent = `<a href="${m.text}" download="${m.fileName || 'arquivo'}" class="underline font-bold text-emerald-100 block">📄 Baixar: ${m.fileName || 'Arquivo'}</a>`;
-            }
+          if (!isMe && !m.seen) db.collection("chats").doc(chatId).collection("messages").doc(doc.id).update({ seen: true }).catch(() => {});
+          let content;
+          const file = safeUrl(m.text);
+          if (m.isAttachment && file) {
+            content = m.fileType === 'image'
+              ? `<img src="${esc(file)}" data-view="${esc(file)}" class="max-h-48 min-h-20 min-w-20 rounded-xl object-cover cursor-zoom-in" alt="Imagem enviada">`
+              : `<a href="${esc(file)}" download="${esc(m.fileName || 'arquivo')}" class="flex items-center gap-2 font-bold underline">${icon("file", "w-4 h-4")} ${esc(m.fileName || "Arquivo")}</a>`;
           } else {
-            bubbleContent = `<span>${m.text}</span>`;
+            content = `<span class="whitespace-pre-wrap break-words">${esc(m.text)}</span>`;
           }
-
-          msgDiv.innerHTML = `
-            <div class="max-w-[80%] p-2.5 rounded-xl ${isMe ? 'bg-cb-bordo text-white' : 'bg-stone-200 text-stone-800'}">
-              <span class="block text-[9px] font-bold opacity-75 mb-0.5">${m.sender}</span>
-              ${bubbleContent}
-            </div>
-            <div class="flex items-center gap-1 mt-0.5">
-              <span class="text-[9px] text-stone-400">${m.time || ''}</span>
-              ${isMe ? `<span class="text-[9px] font-bold ${m.seen ? 'text-emerald-600' : 'text-stone-400'}">${m.seen ? '✓✓ Visto' : '✓ Enviado'}</span>` : ''}
-            </div>`;
-          container.appendChild(msgDiv);
+          html.push(`
+            <div class="flex flex-col ${isMe ? "items-end" : "items-start"}">
+              ${isMe ? "" : `<span class="text-[11px] font-bold text-stone-500 mb-1 ml-1">${esc(m.sender)}</span>`}
+              <div class="max-w-[82%] px-3.5 py-2.5 ${isMe ? "bg-cb-bordo text-white rounded-2xl rounded-br-md" : "bg-stone-100 text-cb-ink rounded-2xl rounded-bl-md"}">${content}</div>
+              <span class="text-[10px] text-stone-400 mt-1 mx-1">${esc(m.time || "")}${isMe ? ` · <span class="${m.seen ? "text-emerald-600 font-bold" : ""}">${m.seen ? "Visto" : "Enviado"}</span>` : ""}</span>
+            </div>`);
         });
+        container.innerHTML = html.join("");
         container.scrollTop = container.scrollHeight;
       });
     }
@@ -2916,73 +2811,49 @@
 
     function renderTechniciansList() {
       const container = document.getElementById("technicians-list-container");
-      if (!container) return;
-      container.innerHTML = "";
+      if (!container || !currentUser) return;
 
-      const regionFilter = document.getElementById("filter-tech-region")?.value || "";
-      const serviceFilter = document.getElementById("filter-tech-service")?.value || "";
-
+      const regionFilter = document.getElementById("filter-tech-region").value;
       const serviceSelect = document.getElementById("filter-tech-service");
-      if (serviceSelect && serviceSelect.options.length <= 1) {
-        let uniqueServices = [...new Set(techniciansList.map(t => t.service))].sort();
-        uniqueServices.forEach(srv => {
-          let opt = document.createElement("option");
-          opt.value = srv; opt.innerText = srv; serviceSelect.appendChild(opt);
-        });
-        serviceSelect.value = serviceFilter;
-      }
+      const serviceFilter = serviceSelect.value;
+      const services = [...new Set(techniciansList.map(t => t.service).filter(Boolean))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+      serviceSelect.innerHTML = `<option value="">Todos</option>` + services.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
+      if (services.includes(serviceFilter)) serviceSelect.value = serviceFilter;
 
-      let filtered = techniciansList.filter(t => {
-        let matchReg = !regionFilter || t.region.includes(regionFilter) || t.region === "Geral";
-        let matchSrv = !serviceFilter || t.service === serviceFilter;
+      const filtered = techniciansList.filter(t => {
+        const matchReg = !regionFilter || String(t.region || "").includes(regionFilter) || t.region === "Geral";
+        const matchSrv = !serviceSelect.value || t.service === serviceSelect.value;
         return matchReg && matchSrv;
       });
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center bg-white rounded-xl border text-stone-400 text-xs">Nenhum técnico encontrado.</div>`;
+        container.innerHTML = `<div class="card p-8 text-center"><span class="w-14 h-14 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center mx-auto mb-3">${icon("wrench", "w-7 h-7")}</span><p class="font-bold">Nenhum prestador encontrado</p></div>`;
         return;
       }
 
-      let groups = {};
-      filtered.forEach(t => {
-        let reg = t.region || "Geral";
-        if (!groups[reg]) groups[reg] = [];
-        groups[reg].push(t);
-      });
-
-      for (let reg in groups) {
-        let section = document.createElement("div");
-        section.className = "bg-white p-4 rounded-xl border shadow-sm space-y-3";
-        section.innerHTML = `<h3 class="font-bold text-cb-bordo text-xs uppercase tracking-wider border-b pb-1.5">📍 ${reg}</h3>`;
-
-        let listDiv = document.createElement("div");
-        listDiv.className = "grid grid-cols-1 sm:grid-cols-2 gap-2";
-
-        groups[reg].forEach((tech) => {
-          let originalIdx = techniciansList.indexOf(tech);
-          let cleanPhone = tech.phone.replace(/\D/g, '');
-          let whatsAppUrl = `https://api.whatsapp.com/send?phone=55${cleanPhone}`;
-
-          let card = document.createElement("div");
-          card.className = "p-3 bg-stone-50 border rounded-xl flex justify-between items-center text-xs";
-          card.innerHTML = `
-            <div class="space-y-0.5">
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-stone-900 text-sm">${tech.name}</span>
-                ${currentUser.role === 'admin' || currentUser.role === 'gerente' ? `<button onclick="openTechModal(${originalIdx})" class="text-blue-600 font-bold hover:underline text-[10px]">✏️ Editar</button>` : ''}
-              </div>
-              <span class="inline-block bg-amber-100 text-amber-900 font-semibold px-2 py-0.5 rounded text-[10px]">${tech.service}</span>
-              <span class="block text-stone-500 font-mono">📞 ${tech.phone}</span>
-            </div>
-            <a href="${whatsAppUrl}" target="_blank" class="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg transition flex items-center gap-1 shadow-sm shrink-0">
-              <span>💬 WhatsApp</span>
-            </a>`;
-          listDiv.appendChild(card);
-        });
-
-        section.appendChild(listDiv);
-        container.appendChild(section);
-      }
+      const groups = {};
+      filtered.forEach(t => { (groups[t.region || "Geral"] ||= []).push(t); });
+      container.innerHTML = Object.entries(groups).map(([region, list]) => `
+        <div class="space-y-2">
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-stone-500 px-1">${esc(region)}</h3>
+          <div class="grid sm:grid-cols-2 gap-2.5">
+            ${list.map(t => {
+              const idx = techniciansList.indexOf(t);
+              const digits = String(t.phone || "").replace(/\D/g, "");
+              const wa = digits.startsWith("55") && digits.length > 11 ? digits : `55${digits}`;
+              return `
+                <div class="card p-4 flex items-center gap-3">
+                  <span class="w-11 h-11 rounded-xl bg-cb-soft text-cb-bordo flex items-center justify-center shrink-0 font-extrabold text-sm">${esc(initials(t.name))}</span>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-bold truncate">${esc(t.name)}</p>
+                    <p class="text-xs text-cb-muted truncate">${esc(t.service)} · ${esc(t.phone)}</p>
+                  </div>
+                  ${isManager() ? `<button onclick="openTechModal(${idx})" class="icon-btn !w-9 !h-9" aria-label="Editar">${icon("edit", "w-4 h-4")}</button>` : ""}
+                  ${digits ? `<a href="https://api.whatsapp.com/send?phone=${wa}" target="_blank" rel="noopener" class="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 hover:bg-emerald-700" aria-label="WhatsApp de ${esc(t.name)}">${icon("message", "w-5 h-5")}</a>` : ""}
+                </div>`;
+            }).join("")}
+          </div>
+        </div>`).join("");
     }
 
     /* =========================================================
@@ -3360,7 +3231,11 @@
       info: '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
       store: '<path d="M3 9 4.5 4h15L21 9"/><path d="M4 9v11h16V9M3 9h18M9 20v-6h6v6"/>',
       star: '<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
-      sheet: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/>'
+      sheet: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/>',
+      filter: '<path d="M22 3H2l8 9.5V19l4 2v-8.5z"/>',
+      logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+      paperclip: '<path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/>',
+      send: '<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>'
     };
 
     function icon(name, cls = "w-5 h-5") {
@@ -3398,6 +3273,15 @@
       while (root.children.length > 3) root.firstChild.remove();
       setTimeout(() => el.remove(), ms || Math.min(9000, 3000 + String(message).length * 40));
     }
+
+    function guessToastKind(msg) {
+      const m = String(msg).toLowerCase();
+      if (/(não foi possível|erro|negad|incorret|bloque|recusad)/.test(m)) return "error";
+      if (/(sucesso|salvo|salva|criad|concluíd|enviad|restaurad|atualizad|aprovad|desfeita|excluíd)/.test(m)) return "success";
+      if (/(atenção|preencha|selecione|digite|obrigatóri|apenas|mantenha|precisa|restrit)/.test(m)) return "warn";
+      return "info";
+    }
+    window.alert = (msg) => toast(String(msg ?? ""), guessToastKind(msg));
 
     // ---- Diálogos: confirmar, perguntar e informar (retornam Promise) ----
     let dialogResolve = null;
@@ -3667,7 +3551,7 @@
     function showLoginScreen() {
       hideBootSplash();
       document.getElementById("login-screen").classList.remove("hidden");
-      document.getElementById("modules-screen").classList.add("hidden");
+      document.getElementById("app-shell").classList.add("hidden");
       setTimeout(() => document.getElementById("login-user")?.focus(), 50);
     }
 
@@ -3743,16 +3627,21 @@
     function afterLogin() {
       hideBootSplash();
       document.getElementById("login-screen").classList.add("hidden");
+      document.getElementById("app-shell").classList.remove("hidden");
       setLoginError("");
-      document.getElementById("sidebar-user-name").innerText = `${currentUser.name} (${ROLE_LABELS[currentUser.role] || currentUser.role})`;
-      document.getElementById("sidebar-btn-users")?.classList.toggle("hidden", !isAdmin());
-      document.getElementById("sidebar-btn-models")?.classList.toggle("hidden", !isManager());
+      document.getElementById("side-user-name").innerText = currentUser.name;
+      document.getElementById("side-user-role").innerText = ROLE_LABELS[currentUser.role] || currentUser.role;
+      document.getElementById("side-avatar").innerText = initials(currentUser.name);
+      document.getElementById("btn-avatar").innerText = initials(currentUser.name);
+      document.getElementById("btn-reports-trash").classList.toggle("hidden", !isManager());
+      document.getElementById("btn-delete-batch").classList.toggle("hidden", !isAdmin());
+      document.getElementById("btn-trash-actions").classList.toggle("hidden", !isAdmin());
       updateLogos();
       loadDraft();
       stopAllListeners();
       setupCloudListeners();
       renderPresetUnits();
-      openModulesScreen();
+      go("home");
     }
 
     async function changeMyPassword() {
